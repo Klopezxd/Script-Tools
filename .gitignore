@@ -1,0 +1,42 @@
+# ===================================================
+# SCRIPT-TOOLS - GITIGNORE
+# ===================================================
+
+# Perfil personal privado (CRÍTICO: No subir a repositorios públicos)
+USER.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+env/
+
+# Multimedia & Archivos de salida de prueba
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*_comp.mp4
+
+# Salidas y temporales de optimización PDF
+*_compressed_*.pdf
+temp_struct_*.pdf
+*.pdf
+
+# Salidas de respaldo de sistema
+Backup_Formateo_*
+REFERENCE_*
+REINSTALL_*
+
+# Archivos de sistema Windows y editores
+desktop.ini
+Thumbs.db
+.vscode/
+.idea/
+*.swp
