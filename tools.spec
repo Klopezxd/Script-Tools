@@ -26,7 +26,7 @@ for pkg in ["pymupdf", "pikepdf", "rich"]:
 
 a = Analysis(
     ["tools.py"],
-    pathex=["video-compressor", "pdf-optimizer", "vscode-path-doctor"],
+    pathex=["tools/video-compressor", "tools/pdf-optimizer", "tools/vscode-path-doctor"],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,

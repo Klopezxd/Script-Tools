@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT_DIR / "video-compressor"))
+sys.path.insert(0, str(ROOT_DIR / "tools" / "video-compressor"))
 
 from compress_video import (
     VideoMetadata,
@@ -160,7 +160,7 @@ def test_compress_video_invalid_target_size_cli(tmp_path):
     import subprocess
     import sys
 
-    script = Path(__file__).resolve().parent.parent / "video-compressor" / "compress_video.py"
+    script = Path(__file__).resolve().parent.parent / "tools" / "video-compressor" / "compress_video.py"
     proc = subprocess.run(
         [sys.executable, str(script), str(fake_vid), "--target-size", "invalid_size_str"],
         capture_output=True,
@@ -178,7 +178,7 @@ def test_compress_video_invalid_crf_cli(tmp_path):
     import subprocess
     import sys
 
-    script = Path(__file__).resolve().parent.parent / "video-compressor" / "compress_video.py"
+    script = Path(__file__).resolve().parent.parent / "tools" / "video-compressor" / "compress_video.py"
     proc = subprocess.run(
         [sys.executable, str(script), str(fake_vid), "--crf", "100"],
         capture_output=True,

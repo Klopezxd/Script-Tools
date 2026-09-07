@@ -23,7 +23,7 @@ ROOT_DIR = Path(__file__).resolve().parent
 
 # Ensure sub-packages are discoverable
 for subdir in ["video-compressor", "pdf-optimizer", "vscode-path-doctor"]:
-    path_str = str(ROOT_DIR / subdir)
+    path_str = str(ROOT_DIR / "tools" / subdir)
     if path_str not in sys.path:
         sys.path.insert(0, path_str)
 
@@ -219,7 +219,7 @@ def dispatch_backup(extra_args: list[str]) -> int:
     if sys.platform != "win32":
         sys.stderr.write("[ERROR] System Pre-Format Backup is designed specifically for Windows.\n")
         return 1
-    script = ROOT_DIR / "system-backup-preformat" / "backup_preformat.ps1"
+    script = ROOT_DIR / "tools" / "system-backup-preformat" / "backup_preformat.ps1"
     cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)] + extra_args
     try:
         return subprocess.run(cmd).returncode

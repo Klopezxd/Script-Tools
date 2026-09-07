@@ -60,7 +60,7 @@ jobs:
 
       - name: Run Developer Doctor
         run: |
-          python vscode-path-doctor/dev_doctor.py --json
+          python tools/vscode-path-doctor/dev_doctor.py --json
 
       - name: Run Automated QA Pytest Suite
         run: |

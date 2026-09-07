@@ -37,8 +37,8 @@ ignore = ["E501", "B008"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = [
-    "video-compressor",
-    "pdf-optimizer",
-    "vscode-path-doctor",
+    "tools/video-compressor",
+    "tools/pdf-optimizer",
+    "tools/vscode-path-doctor",
     "."
 ]

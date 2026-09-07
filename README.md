@@ -11,14 +11,16 @@ Disponible mediante CLI unificada (`tools.py` / binario standalone), ejecución 
 
 ---
 
-## Herramientas Incluidas
+## Herramientas Incluidas (`tools/`)
 
-| Módulo | Plataforma | Tecnologías | Capacidades Principales | Ejecución Rápida |
+Todas las herramientas independientes se encuentran organizadas en el directorio [`tools/`](tools/):
+
+| Herramienta | Directorio | Plataforma | Capacidades Principales | Ejecución Rápida |
 |---|---|---|---|---|
-| **[`video-compressor/`](video-compressor/)** | Multiplataforma | Python 3.10+, FFmpeg, GPU HWAccel | Compresión multi-códec (**AV1, HEVC/H.265, H.264, VP9**), auto-detección de GPU (NVENC, VideoToolbox, QSV, AMF) y modo **Target Size a 2 pasadas** para WhatsApp y Discord. | `python tools.py video <file> --target-size 15MB` |
-| **[`pdf-optimizer/`](pdf-optimizer/)** | Multiplataforma | Python, PyMuPDF, pikepdf, Pillow | Motor híbrido con re-muestreo de imágenes en memoria y optimización de flujos de objetos. **Preservación garantizada de capas de texto y OCR**. Funciona sin dependencias externas (Ghostscript opcional). | `python tools.py pdf <file> --profile balanced` |
-| **[`system-backup-preformat/`](system-backup-preformat/)** | Windows | PowerShell 5.1/7+, Registry, Winget, Scoop | Snapshot integral del entorno dev (**Winget, Scoop, VS Code settings y extensiones, Git, WSL2, compiladores, variables de entorno**). Genera `REINSTALL.ps1` interactivo. | `powershell .\backup_preformat.ps1` |
-| **[`vscode-path-doctor/`](vscode-path-doctor/)** | Multiplataforma | Python, PowerShell, Windows Registry | **Dev Doctor** multiplataforma (audita salud de VS Code, Git, compiladores C/C++, CMake, Ninja, runtimes) + Reparador de PATH de VS Code en Windows. | `python tools.py doctor` |
+| **Video Compressor** | [`tools/video-compressor/`](tools/video-compressor/) | Multiplataforma | Compresión multi-códec (**AV1, HEVC/H.265, H.264, VP9**), auto-detección de GPU (NVENC, VideoToolbox, QSV, AMF) y modo **Target Size a 2 pasadas** para WhatsApp y Discord. | `python tools.py video <file> --target-size 15MB` |
+| **PDF Optimizer** | [`tools/pdf-optimizer/`](tools/pdf-optimizer/) | Multiplataforma | Motor híbrido con re-muestreo de imágenes en memoria y optimización de flujos de objetos. **Preservación garantizada de capas de texto y OCR**. Funciona sin dependencias externas (Ghostscript opcional). | `python tools.py pdf <file> --profile balanced` |
+| **System Backup Pre-Format** | [`tools/system-backup-preformat/`](tools/system-backup-preformat/) | Windows | Snapshot integral del entorno dev (**Winget, Scoop, VS Code settings y extensiones, Git, WSL2, compiladores, variables de entorno**). Genera `REINSTALL.ps1` interactivo. | `powershell .\tools\system-backup-preformat\backup_preformat.ps1` |
+| **Dev Environment Doctor** | [`tools/vscode-path-doctor/`](tools/vscode-path-doctor/) | Multiplataforma | **Dev Doctor** multiplataforma (audita salud de VS Code, Git, compiladores C/C++, CMake, Ninja, runtimes) + Reparador de PATH de VS Code en Windows. | `python tools.py doctor` |
 
 ---
 
@@ -106,7 +108,7 @@ git clone https://github.com/Klopezxd/Script-Tools.git
 cd Script-Tools
 
 # 2. Instalar dependencias en tu entorno
-pip install -r pdf-optimizer/requirements.txt
+pip install -r tools/pdf-optimizer/requirements.txt
 ```
 
 ---
@@ -138,50 +140,39 @@ Para mantener la máxima cohesión técnica y aprovechar arquitecturas nativas y
 
 ```text
 Script-Tools/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                     # Pipeline CI/CD (Ubuntu, Windows, macOS)
-│       └── release.yml                # Compilación automatizada de binarios para Releases
-├── scripts/
-│   ├── install_context_menu.ps1       # Instalador de menú contextual (HKCU, sin Admin)
-│   ├── install_context_menu.bat       # Lanzador 1-clic para instalar menú contextual
-│   ├── uninstall_context_menu.ps1     # Desinstalador limpio de menú contextual
-│   └── uninstall_context_menu.bat     # Lanzador 1-clic para desinstalar menú contextual
-├── video-compressor/
-│   ├── compress_video.py              # Compresor multi-códec y acelerado por GPU
-│   ├── compress_video.bat             # Lanzador Drag & Drop para Windows
-│   └── README.md                      # Documentación y recetas de compresión
-├── pdf-optimizer/
-│   ├── pdf_optimizer.py               # Optimizador híbrido de PDFs (Pillow + pikepdf + PyMuPDF)
-│   ├── pdf_optimizer.bat              # Lanzador Drag & Drop para Windows
-│   ├── requirements.txt               # Dependencias del optimizador
-│   └── README.md                      # Documentación y tabla de perfiles DPI
-├── system-backup-preformat/
-│   ├── backup_preformat.ps1           # Snapshot integral del entorno dev en Windows
-│   ├── backup_preformat.bat           # Lanzador automatizado con elevación
-│   ├── template_reinstall.ps1         # Plantilla del asistente interactivo de restauración
-│   └── README.md                      # Flujo de trabajo antes y después de formatear
-├── vscode-path-doctor/
-│   ├── dev_doctor.py                  # Auditor de salud dev multiplataforma (C++, Git, VS Code)
-│   ├── check_vscode_path.ps1          # Diagnóstico y saneamiento de PATH en Windows
-│   ├── check_vscode_path.bat          # Lanzador interactivo
-│   └── README.md                      # Diagnóstico del toolchain de desarrollo
-├── tests/
-│   ├── __init__.py
-│   ├── test_tools_cli.py              # Pruebas de la CLI unificada, flags y auto-completado
-│   ├── test_video_compressor.py       # Pruebas del compresor y lógica de bitrate 2-pass
-│   ├── test_pdf_optimizer.py          # Pruebas de OCR y compresión E2E
-│   ├── test_dev_doctor.py             # Pruebas de auditoría y serialización JSON
-│   └── test_powershell_scripts.py     # Validación de sintaxis AST y ejecución de PowerShell
-├── pyproject.toml                     # Configuración de empaquetado, pytest y Ruff
-├── tools.py                           # CLI central y despachador maestro in-process
-├── tools.spec                         # Especificación PyInstaller para compilar binarios
-├── setup.ps1                          # Provisionamiento automatizado en PowerShell
-├── setup.bat                          # Acceso directo para setup en 1 clic
-├── .gitattributes                     # Normalización de saltos de línea (LF/CRLF)
-├── .gitignore                         # Exclusiones estrictas de perfiles y temporales
-├── LICENSE                            # Licencia MIT
-└── README.md                          # Documentación principal
+├── .github/                      # Automatización CI/CD (Ubuntu, Windows, macOS)
+├── scripts/                      # Utilidades de instalación (menú contextual Explorer)
+├── tests/                        # Suite automatizada de pruebas QA (Pytest)
+├── tools/                        # 👈 TODAS LAS HERRAMIENTAS INDEPENDIENTES
+│   ├── video-compressor/         # Compresor de video acelerado por GPU
+│   │   ├── compress_video.py
+│   │   ├── compress_video.bat
+│   │   └── README.md
+│   ├── pdf-optimizer/            # Optimizador híbrido de PDFs (OCR-Safe)
+│   │   ├── pdf_optimizer.py
+│   │   ├── pdf_optimizer.bat
+│   │   ├── requirements.txt
+│   │   └── README.md
+│   ├── system-backup-preformat/  # Snapshot integral y asistente post-formateo
+│   │   ├── backup_preformat.ps1
+│   │   ├── backup_preformat.bat
+│   │   ├── template_reinstall.ps1
+│   │   └── README.md
+│   ├── vscode-path-doctor/       # Auditor de salud dev y reparación de PATH
+│   │   ├── dev_doctor.py
+│   │   ├── check_vscode_path.ps1
+│   │   ├── check_vscode_path.bat
+│   │   └── README.md
+│   └── README.md                 # Catálogo general de herramientas
+├── pyproject.toml                # Configuración de empaquetado, pytest y Ruff
+├── tools.py                      # CLI central y despachador maestro in-process
+├── tools.spec                    # Especificación PyInstaller para compilar binarios
+├── setup.ps1                     # Provisionamiento automatizado en PowerShell
+├── setup.bat                     # Acceso directo para setup en 1 clic
+├── .gitattributes                # Normalización de saltos de línea (LF/CRLF)
+├── .gitignore                    # Exclusiones estrictas de perfiles y temporales
+├── LICENSE                       # Licencia MIT
+└── README.md                     # Documentación principal
 ```
 
 ---

@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT_DIR / "pdf-optimizer"))
+sys.path.insert(0, str(ROOT_DIR / "tools" / "pdf-optimizer"))
 
 import pikepdf
 import pymupdf as fitz

@@ -18,9 +18,9 @@ PS_SCRIPTS = [
     ROOT_DIR / "setup.ps1",
     ROOT_DIR / "scripts" / "install_context_menu.ps1",
     ROOT_DIR / "scripts" / "uninstall_context_menu.ps1",
-    ROOT_DIR / "system-backup-preformat" / "backup_preformat.ps1",
-    ROOT_DIR / "system-backup-preformat" / "template_reinstall.ps1",
-    ROOT_DIR / "vscode-path-doctor" / "check_vscode_path.ps1",
+    ROOT_DIR / "tools" / "system-backup-preformat" / "backup_preformat.ps1",
+    ROOT_DIR / "tools" / "system-backup-preformat" / "template_reinstall.ps1",
+    ROOT_DIR / "tools" / "vscode-path-doctor" / "check_vscode_path.ps1",
 ]
 
 
@@ -57,7 +57,7 @@ def test_check_vscode_path_execution():
     if not HAS_POWERSHELL:
         pytest.skip("PowerShell is not available on this platform.")
 
-    script = ROOT_DIR / "vscode-path-doctor" / "check_vscode_path.ps1"
+    script = ROOT_DIR / "tools" / "vscode-path-doctor" / "check_vscode_path.ps1"
     proc = subprocess.run(
         [PS_BIN, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)],
         capture_output=True,
@@ -76,7 +76,7 @@ def test_template_reinstall_nopause_execution():
     if not HAS_POWERSHELL:
         pytest.skip("PowerShell is not available on this platform.")
 
-    script = ROOT_DIR / "system-backup-preformat" / "template_reinstall.ps1"
+    script = ROOT_DIR / "tools" / "system-backup-preformat" / "template_reinstall.ps1"
     proc = subprocess.run(
         [PS_BIN, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script), "-NoPause"],
         capture_output=True,
