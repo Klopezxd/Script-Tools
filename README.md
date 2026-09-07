@@ -95,7 +95,7 @@ Haz doble clic en **`setup.bat`** (o ejecuta desde PowerShell):
 El script creará automáticamente el entorno virtual (`.venv`), actualizará `pip`, instalará todas las dependencias y auditará la presencia de `ffmpeg`.
 
 ### Opción B: Ejecutable Autónomo Standalone (Sin Requerir Python)
-Si no deseas instalar Python ni configurar entornos virtuales, ve a la sección de [**Releases**](https://github.com/Klopezxd/Script-Tools/releases) y descarga el binario precompilado independiente:
+Si no deseas instalar Python ni configurar entornos virtuales, ve a la sección de [**Releases**](https://github.com/Klopezxd/Script-Tools/releases) y descarga el binario precompilado independiente (compilado automáticamente en cada push a `main`):
 * **Windows:** `tools-windows-x64.exe` (puedes colocarlo en tu PATH o renombrarlo a `tools.exe`).
 * **Linux:** `tools-linux-x64`.
 * **macOS:** `tools-macos-universal`.
@@ -114,7 +114,7 @@ pip install -r pdf-optimizer/requirements.txt
 
 ## 🧪 Pruebas Automatizadas y Calidad de Código (QA)
 
-El proyecto cuenta con una suite de **39 pruebas automatizadas** unitarias y de integración en **Pytest**:
+El proyecto cuenta con una suite de **42 pruebas automatizadas** unitarias y de integración en **Pytest**:
 
 ```bash
 # Ejecutar suite de pruebas completa
