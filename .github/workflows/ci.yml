@@ -1,0 +1,67 @@
+name: CI - Script-Tools Quality & Multiplatform Suite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-validate:
+    name: Code Quality (Ruff & Syntax)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pymupdf pikepdf Pillow rich pytest
+
+      - name: Run Ruff Linter
+        run: |
+          ruff check .
+
+      - name: Run Ruff Formatter Check
+        run: |
+          ruff format --check .
+
+  multiplatform-test:
+    name: Test Execution (${{ matrix.os }})
+    needs: lint-and-validate
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymupdf pikepdf Pillow rich pytest
+
+      - name: Verify CLI Tools Dispatcher
+        run: |
+          python tools.py --help
+
+      - name: Run Developer Doctor
+        run: |
+          python vscode-path-doctor/dev_doctor.py --json
+
+      - name: Run Automated QA Pytest Suite
+        run: |
+          pytest -v

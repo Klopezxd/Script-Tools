@@ -5,14 +5,43 @@
 # Perfil personal privado (CRÍTICO: No subir a repositorios públicos)
 USER.md
 
-# Python
+# Python Bytecode, Caches & Environments
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.Python
+env/
 venv/
 .venv/
-env/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing, QA & Coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+
+# Compilación y Empaquetado Binario
+dist/
+build/
+*.egg-info/
+*.egg
+*.manifest
+*.spec.bak
+*.exe
+
+# Temporales y Logs
+*.log
+*.tmp
+ffpass_*
+opt_tmp_*
 
 # Multimedia & Archivos de salida de prueba
 *.mp4
@@ -22,21 +51,39 @@ env/
 *.wmv
 *.flv
 *.webm
+*.m4v
+*.ts
 *_comp.mp4
+*_compressed.mp4
 
 # Salidas y temporales de optimización PDF
+*.pdf
+*_opt.pdf
+*_optimized.pdf
 *_compressed_*.pdf
 temp_struct_*.pdf
-*.pdf
 
-# Salidas de respaldo de sistema
+# Salidas de respaldo de sistema Windows
+Backup_Windows_Dev_*
 Backup_Formateo_*
 REFERENCE_*
 REINSTALL_*
+SYSTEM_INVENTORY.md
+VSCode_Config/
+SSH_Public_Keys/
 
-# Archivos de sistema Windows y editores
+# Archivos de sistema Windows y macOS
 desktop.ini
 Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editores e IDEs
 .vscode/
 .idea/
 *.swp
+*.swo
+*~

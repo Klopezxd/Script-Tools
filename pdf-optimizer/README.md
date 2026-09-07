@@ -1,0 +1,92 @@
+# 📄 PDF Optimizer (Multi-Engine & OCR-Safe)
+
+[![OS - Multiplatform](https://img.shields.io/badge/OS-Windows%20%7C%20Linux%20%7C%20macOS-0078D6.svg)](https://github.com/Klopezxd/Script-Tools)
+[![Python - 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
+[![Preservation - OCR Safe](https://img.shields.io/badge/OCR-100%25%20Text%20Preserved-brightgreen.svg)](#)
+
+Suite de optimización de documentos PDF multiplataforma de nivel profesional. Integra un motor híbrido que combina re-muestreo inteligente de imágenes en memoria (**PyMuPDF + Pillow**), compresión estructural de flujos de objetos (**pikepdf**) y motor profundo opcional (**Ghostscript**), garantizando en todo momento la preservación íntegra de la capa de texto seleccionable y OCR.
+
+---
+
+## 🌟 Características Destacadas
+
+* **100% Funcional sin Dependencias Externas:** El motor nativo en Python no requiere instalar Ghostscript ni binarios externos de terceros para operar al máximo rendimiento.
+* **Preservación Estricta de OCR:** Verifica automáticamente antes y después de cada compresión que la capa de texto seleccionable no sufra alteración o borrado accidental.
+* **4 Perfiles de Optimización Calibrados:**
+  * `lossless`: Compresión puramente estructural (object streams) con 0% de degradación visual.
+  * `print`: 300 DPI con compresión JPEG suave (ideal para documentos oficiales o impresos).
+  * `balanced`: 150 DPI (recomendado para tareas universitarias, lectura y correo electrónico).
+  * `screen`: 72 DPI (máximo ahorro de espacio para superar cuotas estrictas de subida).
+* **Protección contra Crecimiento de Archivo:** Si el documento de salida resulta ser más pesado que el original, revierte automáticamente para evitar degradaciones innecesarias.
+* **Procesamiento por Lotes (Batch):** Procesa carpetas enteras de documentos con estadísticas consolidadas en tablas interactivas.
+
+---
+
+## 📋 Requisitos e Instalación
+
+1. **Python 3.10+**
+2. **Dependencias de Python:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+*(Opcional: Si Ghostscript está instalado en el sistema, se habilitará como motor alternativo mediante el flag `--engine gs`).*
+
+---
+
+---
+
+## ⚡ Inicio Rápido (3 Formas de Uso)
+
+### 1. Menú Contextual de Windows (Clic Derecho)
+Instala los accesos directos ejecutando `scripts/install_context_menu.bat` en la raíz.
+Luego haz **clic derecho** sobre cualquier archivo `.pdf` y selecciona:
+> **Optimizar con Script-Tools**
+
+### 2. Arrastrar y Soltar (Drag & Drop)
+Arrastra cualquier archivo `.pdf` sobre `pdf_optimizer.bat` en el Explorador de Windows para procesarlo de inmediato en modo equilibrado.
+
+### 3. Línea de Comandos (CLI Profesional)
+```bash
+# Vía CLI Unificada (raíz)
+python tools.py pdf documento.pdf --profile balanced
+
+# O directamente desde este directorio
+python pdf_optimizer.py documento.pdf --profile balanced
+```
+
+---
+
+## 📊 Comparativa de Perfiles
+
+| Perfil | DPI de Imagen | Calidad JPEG | Reducción Típica | Caso de Uso Ideal |
+|---|---|---|---|---|
+| `lossless` | Original | Sin re-muestreo | 10% - 35% | Tesis, contratos legales, PDFs ya vectoriales (0% pérdida visual). |
+| `print` | 300 DPI | 88 (Alta) | 30% - 60% | Documentos formales para impresión física o portafolios. |
+| `balanced` | 150 DPI | 75 (Media) | 50% - 80% | Tareas universitarias, reportes, diapositivas y envío por email. |
+| `screen` | 72 DPI | 60 (Baja) | 70% - 92% | Plataformas educativas o portales web con cuotas estrictas (< 5 MB). |
+
+---
+
+## 📋 Recetas Frecuentes (Copiar y Pegar)
+
+| Objetivo | Comando | Explicación Técnica |
+|---|---|---|
+| **Subir a Aula Virtual / Moodle** | `python tools.py pdf tarea.pdf -p screen` | 72 DPI + JPEG agresivo para superar límites de subida de portales educativos. |
+| **Optimizar Documento Legal / OCR** | `python tools.py pdf contrato.pdf --strict-ocr` | Comprime imágenes y revierte si se detecta alteración en la capa OCR. |
+| **Optimizar Tesis sin Tocar Gráficos** | `python tools.py pdf tesis.pdf -p lossless` | Re-empaqueta object streams y remueve metadatos redundantes con pikepdf. |
+| **Carpeta de Documentos Escaneados** | `python tools.py pdf ./escaneos --batch -p balanced` | Procesa en lote mostrando barra de progreso y tabla de ahorro consolidado. |
+| **Utilizar Motor Ghostscript (Alternativo)** | `python tools.py pdf plano.pdf -e gs -p print` | Delega la rasterización a Ghostscript si está instalado en el sistema. |
+
+---
+
+## ⚙️ Parámetros de CLI
+
+| Parámetro | Opciones | Por Defecto | Descripción |
+|---|---|---|---|
+| `input` | Ruta a archivo o carpeta | *GUI Picker* | Documento o carpeta a procesar. Si se omite, abre diálogo nativo. |
+| `-o, --output` | Ruta de archivo | `[nombre]_optimized.pdf` | Ruta de salida personalizada. |
+| `-p, --profile` | `lossless`, `print`, `balanced`, `screen` | `balanced` | Perfil de calidad y resolución DPI. |
+| `-e, --engine` | `native`, `gs` | `native` | Motor: `native` (Python puro sin dependencias) o `gs` (Ghostscript). |
+| `--strict-ocr` | Flag booleano | `False` | Aborta y revierte si detecta pérdida en la capa de texto OCR. |
+| `--batch` | Flag booleano | `False` | Procesa recursivamente todos los PDFs en la carpeta indicada. |
+
