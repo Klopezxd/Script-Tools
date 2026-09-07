@@ -1,37 +1,36 @@
-# 🛠️ Script-Tools: Multiplatform Developer & Automation Toolkit
+# Script-Tools
 
-[![CI Status](https://img.shields.io/badge/CI-GitHub%20Actions%20Passing-brightgreen.svg?logo=githubactions&logoColor=white)](https://github.com/Klopezxd/Script-Tools)
-[![OS - Multiplatform](https://img.shields.io/badge/OS-Windows%20%7C%20Linux%20%7C%20macOS-0078D6.svg?logo=windows&logoColor=white)](https://github.com/Klopezxd/Script-Tools)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![Code Style](https://img.shields.io/badge/Code%20Style-Ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Tests](https://img.shields.io/badge/QA%20Tests-42%20Passed-brightgreen.svg)](tests/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/Klopezxd/Script-Tools/actions/workflows/ci.yml/badge.svg)](https://github.com/Klopezxd/Script-Tools/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Klopezxd/Script-Tools?style=flat-square&color=blue)](https://github.com/Klopezxd/Script-Tools/releases)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg?style=flat-square)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](LICENSE)
 
-> **Colección modular de herramientas de automatización, compresión multimedia acelerada por GPU, optimización de documentos preservando OCR y auditoría de entornos de desarrollo.**
-> Diseñado bajo arquitectura desacoplada: utilizable tanto mediante una **CLI unificada central (`tools.py` / `tools.exe`)** como de forma **independiente por módulo**, con integración nativa al **Explorador de Windows**.
+Colección modular de herramientas de automatización para desarrolladores: compresión multimedia acelerada por GPU, optimización de documentos con preservación estricta de OCR y auditoría integral de entornos de desarrollo.
+
+Disponible mediante CLI unificada (`tools.py` / binario standalone), ejecución independiente por módulo o integración al menú contextual del sistema operativo.
 
 ---
 
-## 🧰 Utilidades Incluidas
+## Herramientas Incluidas
 
-| Módulo | Alcance | Tecnologías Clave | Capacidades Principales | Ejecución Rápida |
+| Módulo | Plataforma | Tecnologías | Capacidades Principales | Ejecución Rápida |
 |---|---|---|---|---|
-| **[`video-compressor/`](video-compressor/)** | Multiplataforma | Python 3.10+, FFmpeg, GPU HWAccel | Compresión multi-códec (**AV1, HEVC/H.265, H.264, VP9**), auto-detección de GPU (NVENC, VideoToolbox, QSV, AMF) y modo **Target Size a 2 pasadas** para WhatsApp/Discord. | `python tools.py video <file> --target-size 15MB` |
-| **[`pdf-optimizer/`](pdf-optimizer/)** | Multiplataforma | Python, PyMuPDF, pikepdf, Pillow | Motor híbrido con re-muestreo de imágenes en memoria y optimización de flujos de objetos. **Garantía de 100% de preservación de texto y OCR**. Funciona sin requerir Ghostscript. | `python tools.py pdf <file> --profile balanced` |
-| **[`system-backup-preformat/`](system-backup-preformat/)** | Windows Dev | PowerShell 5.1/7+, Registry, Winget, Scoop | Snapshot integral del entorno dev (**Winget, Scoop, VS Code settings y extensiones, Git, WSL2, compiladores, variables**). Genera `REINSTALL.ps1` interactivo. | `powershell .\backup_preformat.ps1` |
-| **[`vscode-path-doctor/`](vscode-path-doctor/)** | Multiplataforma | Python, PowerShell, Windows Registry | **Dev Doctor** multiplataforma (audita salud de VS Code, Git, compiladores C/C++, CMake, Ninja, Runtimes) + Reparador de PATH de VS Code en Windows. | `python tools.py doctor` |
+| **[`video-compressor/`](video-compressor/)** | Multiplataforma | Python 3.10+, FFmpeg, GPU HWAccel | Compresión multi-códec (**AV1, HEVC/H.265, H.264, VP9**), auto-detección de GPU (NVENC, VideoToolbox, QSV, AMF) y modo **Target Size a 2 pasadas** para WhatsApp y Discord. | `python tools.py video <file> --target-size 15MB` |
+| **[`pdf-optimizer/`](pdf-optimizer/)** | Multiplataforma | Python, PyMuPDF, pikepdf, Pillow | Motor híbrido con re-muestreo de imágenes en memoria y optimización de flujos de objetos. **Preservación garantizada de capas de texto y OCR**. Funciona sin dependencias externas (Ghostscript opcional). | `python tools.py pdf <file> --profile balanced` |
+| **[`system-backup-preformat/`](system-backup-preformat/)** | Windows | PowerShell 5.1/7+, Registry, Winget, Scoop | Snapshot integral del entorno dev (**Winget, Scoop, VS Code settings y extensiones, Git, WSL2, compiladores, variables de entorno**). Genera `REINSTALL.ps1` interactivo. | `powershell .\backup_preformat.ps1` |
+| **[`vscode-path-doctor/`](vscode-path-doctor/)** | Multiplataforma | Python, PowerShell, Windows Registry | **Dev Doctor** multiplataforma (audita salud de VS Code, Git, compiladores C/C++, CMake, Ninja, runtimes) + Reparador de PATH de VS Code en Windows. | `python tools.py doctor` |
 
 ---
 
-## 🚀 CLI Central Unificada (`tools.py`)
+## CLI Central (`tools.py`)
 
-Puedes utilizar el orquestador principal en la raíz del repositorio para invocar cualquier herramienta:
+El despachador central en la raíz del repositorio permite ejecutar cualquier herramienta de forma unificada:
 
 ```bash
-# 1. Compresión de video con límite estricto de tamaño (ideal para WhatsApp / Discord)
+# 1. Compresión de video con límite estricto de tamaño (WhatsApp / Discord)
 python tools.py video clase.mp4 --target-size 15MB
 
-# 2. Compresión de video con aceleración por GPU y códec moderno AV1
+# 2. Compresión de video con aceleración por GPU y códec AV1
 python tools.py video gameplay.mkv --codec av1 --preset high --resolution 1080p
 
 # 3. Optimización de PDF manteniendo capas OCR intactas
@@ -43,37 +42,37 @@ python tools.py doctor
 # 5. Respaldo de sistema Windows previo a formateo
 python tools.py backup
 
-# 6. Generador de auto-completado para tu shell favorito
+# 6. Generador de autocompletado para el shell
 python tools.py completion powershell
 ```
 
-*Cada subdirectorio incluye también sus propios scripts y lanzadores para uso completamente aislado.*
+*Cada subdirectorio incluye también sus propios scripts y lanzadores para uso completamente desacoplado.*
 
 ---
 
-## 🖱️ Integración al Explorador de Windows (Menú Contextual)
+## Integración al Explorador de Windows
 
-Para la máxima comodidad en el día a día, puedes integrar `Script-Tools` directamente al menú contextual de clic derecho en Windows (sin requerir permisos de Administrador):
+Permite invocar las herramientas directamente desde el menú contextual de clic derecho en Windows (instalación a nivel de usuario en `HKCU`, sin requerir privilegios de Administrador):
 
 ```powershell
-# Instalar accesos directos de clic derecho (doble clic en Explorer):
+# Instalar accesos directos en el menú contextual:
 .\scripts\install_context_menu.bat
 
-# Desinstalar limpiamente en cualquier momento:
+# Desinstalar limpiamente:
 .\scripts\uninstall_context_menu.bat
 ```
 
-* **Videos (`.mp4`, `.mkv`, `.mov`, `.avi`, `.webm`, etc.):** Clic derecho > *"Comprimir con Script-Tools"*.
+* **Videos (`.mp4`, `.mkv`, `.mov`, `.avi`, `.webm`):** Clic derecho > *"Comprimir con Script-Tools"*.
 * **Documentos (`.pdf`):** Clic derecho > *"Optimizar con Script-Tools"*.
 
 ---
 
-## ⚡ Autocompletado de Terminal (Tab Completion)
+## Autocompletado de Terminal
 
 Habilita autocompletado nativo para todos los subcomandos y banderas técnicas (`--codec`, `--preset`, `--target-size`, `--hwaccel`, etc.):
 
 ```powershell
-# En PowerShell (agrega a tu $PROFILE para persistencia):
+# En PowerShell (agregar a $PROFILE para persistencia):
 tools completion powershell | Out-String | Invoke-Expression
 
 # En Bash:
@@ -85,17 +84,17 @@ source <(tools completion zsh)
 
 ---
 
-## 💻 Instalación y Configuración Rápida
+## Instalación y Configuración
 
-### Opción A: Configuración Automatizada en 1 Clic (Recomendada en Windows)
+### Opción A: Configuración Automatizada (Windows)
 Haz doble clic en **`setup.bat`** (o ejecuta desde PowerShell):
 ```powershell
 .\setup.ps1
 ```
-El script creará automáticamente el entorno virtual (`.venv`), actualizará `pip`, instalará todas las dependencias y auditará la presencia de `ffmpeg`.
+El script crea automáticamente el entorno virtual (`.venv`), actualiza `pip`, instala todas las dependencias y audita la presencia de `ffmpeg`.
 
 ### Opción B: Ejecutable Autónomo Standalone (Sin Requerir Python)
-Si no deseas instalar Python ni configurar entornos virtuales, ve a la sección de [**Releases**](https://github.com/Klopezxd/Script-Tools/releases) y descarga el binario precompilado independiente (compilado automáticamente en cada push a `main`):
+Si no deseas instalar Python ni configurar entornos virtuales, descarga el binario precompilado independiente desde [**Releases**](https://github.com/Klopezxd/Script-Tools/releases):
 * **Windows:** `tools-windows-x64.exe` (puedes colocarlo en tu PATH o renombrarlo a `tools.exe`).
 * **Linux:** `tools-linux-x64`.
 * **macOS:** `tools-macos-universal`.
@@ -112,9 +111,9 @@ pip install -r pdf-optimizer/requirements.txt
 
 ---
 
-## 🧪 Pruebas Automatizadas y Calidad de Código (QA)
+## Suite de Pruebas y Calidad de Código
 
-El proyecto cuenta con una suite de **42 pruebas automatizadas** unitarias y de integración en **Pytest**:
+El proyecto cuenta con una suite de pruebas automatizadas unitarias y de integración en **Pytest**:
 
 ```bash
 # Ejecutar suite de pruebas completa
@@ -126,16 +125,16 @@ ruff check .
 
 ---
 
-## 🌐 Proyectos Especializados Desacoplados
+## Proyectos Relacionados
 
-Para mantener la máxima cohesión técnica y aprovechar arquitecturas nativas y en la nube, los siguientes proyectos han sido trasladados a sus propios repositorios independientes:
+Para mantener la máxima cohesión técnica y aprovechar arquitecturas nativas y en la nube, los siguientes proyectos se mantienen en repositorios independientes:
 
-* 🎙️ **[`whisperx-transcriptor`](https://github.com/Klopezxd/whisperx-transcriptor):** Pipeline de transcripción fonética y diarización de locutores 100% cloud en Hugging Face Spaces (ZeroGPU NVIDIA A100/T4 + Pyannote 3.1).
-* 🐾 **[`vet-prescription-generator`](https://github.com/Klopezxd/vet-prescription-generator):** Aplicación de escritorio nativa en **C# .NET 10** (`Single-File AOT Trimmed`, ~13 MB) con servidor HTTP embebido, SQLite WAL y generación oficial de recetas veterinarias para Agrocalidad Ecuador.
+* **[`whisperx-transcriptor`](https://github.com/Klopezxd/whisperx-transcriptor):** Pipeline de transcripción fonética y diarización de locutores en la nube sobre Hugging Face Spaces (ZeroGPU NVIDIA A100/T4 + Pyannote 3.1).
+* **[`vet-prescription-generator`](https://github.com/Klopezxd/vet-prescription-generator):** Aplicación de escritorio nativa en **C# .NET 10** (`Single-File AOT Trimmed`, ~13 MB) con servidor HTTP embebido, SQLite WAL y generación oficial de recetas veterinarias para Agrocalidad Ecuador.
 
 ---
 
-## 📁 Estructura del Repositorio
+## Estructura del Repositorio
 
 ```text
 Script-Tools/
@@ -187,8 +186,8 @@ Script-Tools/
 
 ---
 
-## 📄 Licencia
+## Licencia
 
-Distribuido bajo la Licencia MIT. Consulta el archivo `LICENSE` para más información.
+Distribuido bajo la Licencia MIT. Consulta el archivo [`LICENSE`](LICENSE) para más información.
 
 **Autor:** [Klever López](https://github.com/Klopezxd) — [@Klopezxd](https://github.com/Klopezxd)

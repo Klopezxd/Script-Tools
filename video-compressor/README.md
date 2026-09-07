@@ -1,14 +1,10 @@
-# 🎥 Video Compressor (Hardware-Accelerated & Multi-Codec)
+# Video Compressor
 
-[![OS - Multiplatform](https://img.shields.io/badge/OS-Windows%20%7C%20Linux%20%7C%20macOS-0078D6.svg)](https://github.com/Klopezxd/Script-Tools)
-[![Python - 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![FFmpeg](https://img.shields.io/badge/Engine-FFmpeg%20%28libx264%20%7C%20libx265%20%7C%20AV1%29-green.svg)](https://ffmpeg.org)
-
-Herramienta de compresión de video multiplataforma de nivel profesional basada en **FFmpeg**. Diseñada para maximizar el ahorro de espacio mediante detección automática de aceleración por hardware (GPU), cálculo de tasa de bits a dos pasadas para límites de mensajería (WhatsApp/Discord) y perfiles CRF de alta fidelidad.
+Herramienta de compresión de video multiplataforma de alto rendimiento basada en **FFmpeg**. Diseñada para maximizar el ahorro de espacio mediante detección automática de aceleración por hardware (GPU), cálculo de tasa de bits a dos pasadas para límites de plataformas de mensajería (WhatsApp, Discord) y perfiles CRF de alta fidelidad.
 
 ---
 
-## 🌟 Características Destacadas
+## Características
 
 * **Detección Automática de GPU:** Detecta y aprovecha automáticamente encoders de hardware:
   * **NVIDIA:** `hevc_nvenc`, `h264_nvenc`, `av1_nvenc`
@@ -29,7 +25,7 @@ Herramienta de compresión de video multiplataforma de nivel profesional basada 
 
 ---
 
-## 📋 Requisitos
+## Requisitos
 
 1. **Python 3.10+**
 2. **FFmpeg y FFprobe** instalados y registrados en el PATH del sistema:
@@ -39,7 +35,7 @@ Herramienta de compresión de video multiplataforma de nivel profesional basada 
 
 ---
 
-## ⚡ Inicio Rápido (3 Formas de Uso)
+## Guía de Uso
 
 ### 1. Menú Contextual de Windows (Clic Derecho)
 Instala los accesos directos ejecutando `scripts/install_context_menu.bat` en la raíz.
@@ -49,7 +45,7 @@ Luego haz **clic derecho** sobre cualquier archivo de video (`.mp4`, `.mkv`, `.m
 ### 2. Arrastrar y Soltar (Drag & Drop)
 Arrastra cualquier video sobre `compress_video.bat` en el Explorador de Windows. Se ejecutará inmediatamente en modo equilibrado con barra de progreso en vivo.
 
-### 3. Línea de Comandos (CLI Profesional)
+### 3. Línea de Comandos (CLI)
 ```bash
 # Vía CLI Unificada (raíz)
 python tools.py video clase.mp4 --target-size 15MB
@@ -60,7 +56,7 @@ python compress_video.py clase.mp4 --target-size 15MB
 
 ---
 
-## 📋 Recetas Frecuentes (Copiar y Pegar)
+## Recetas Frecuentes
 
 | Objetivo | Comando | Explicación Técnica |
 |---|---|---|
@@ -73,7 +69,7 @@ python compress_video.py clase.mp4 --target-size 15MB
 
 ---
 
-## ⚙️ Parámetros de CLI
+## Parámetros de CLI
 
 | Argumento | Opciones | Por Defecto | Descripción |
 |---|---|---|---|

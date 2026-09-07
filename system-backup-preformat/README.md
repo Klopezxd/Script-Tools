@@ -1,31 +1,27 @@
-# 💾 Windows Developer Pre-Format Snapshot & Restore
+# System Backup Pre-Format Suite
 
-[![OS - Windows](https://img.shields.io/badge/OS-Windows%2010%20%7C%2011-0078D6.svg?logo=windows&logoColor=white)](https://github.com/Klopezxd/Script-Tools)
-[![PowerShell](https://img.shields.io/badge/Shell-PowerShell%205.1%2B%20%2F%207%2B-5391FE.svg?logo=powershell&logoColor=white)](https://microsoft.com/powershell)
-[![Automation](https://img.shields.io/badge/Restore-Automated%20%26%20Interactive-brightgreen.svg)](#)
-
-Suite de auditoría, respaldo y restauración integral diseñada específicamente para entornos de desarrollo en Windows previo a un formateo del sistema operativo. Captura el ecosistema de herramientas de desarrollo (Winget, Scoop, VS Code, Git, WSL2, compiladores y variables) y genera un asistente interactivo (`REINSTALL.ps1`) para restaurar el entorno post-formateo.
+Suite de auditoría, respaldo y restauración integral diseñada para entornos de desarrollo en Windows previo a un formateo del sistema operativo. Captura el ecosistema de herramientas de desarrollo (Winget, Scoop, VS Code, Git, WSL2, compiladores y variables de entorno) y genera un asistente interactivo (`REINSTALL.ps1`) para restaurar el entorno post-formateo.
 
 ---
 
-## 🌟 Qué Respalda
+## Componentes Respaldados
 
-* 🪟 **Winget:** Exportación oficial en formato JSON (`winget export`) para reinstalación desatendida.
-* 🍨 **Scoop:** Aplicaciones instaladas y buckets activos (`scoop export`).
-* 🍫 **Chocolatey:** Paquetes instalados (`REINSTALL_chocolatey_packages.config`).
-* 💻 **Visual Studio Code:**
+* **Winget:** Exportación oficial en formato JSON (`winget export`) para reinstalación desatendida.
+* **Scoop:** Aplicaciones instaladas y buckets activos (`scoop export`).
+* **Chocolatey:** Paquetes instalados (`REINSTALL_chocolatey_packages.config`).
+* **Visual Studio Code:**
   * Lista completa de extensiones instaladas (`code --list-extensions`).
   * Respaldo directo de configuraciones de usuario (`settings.json`, `keybindings.json` y snippets).
-* ⚙️ **Compiladores y Toolchain:** Detección de MSVC (`cl.exe`), GCC, G++, Clang, CMake, Ninja, .NET SDKs y Rust/Cargo.
-* 🐧 **WSL 2:** Auditoría de distribuciones de Linux activas (`wsl -l -v`).
-* 🔧 **Git & Terminal:** Configuración global (`~/.gitconfig`), perfil de PowerShell (`$PROFILE`) y advertencia de seguridad para respaldar llaves SSH privadas.
-* 🐍 **Python & Node:** Lista de paquetes globales (`pip freeze`, `npm list -g`).
-* 🌐 **Variables de Entorno:** Claves de registro completas del sistema y de usuario (`.reg`).
-* 📦 **Inventario General:** Lista de programas instalados en HKLM (64 y 32 bits) y HKCU deduplicados.
+* **Compiladores y Toolchain:** Detección de MSVC (`cl.exe`), GCC, G++, Clang, CMake, Ninja, .NET SDKs y Rust/Cargo.
+* **WSL 2:** Auditoría de distribuciones de Linux activas (`wsl -l -v`).
+* **Git y Terminal:** Configuración global (`~/.gitconfig`), perfil de PowerShell (`$PROFILE`) y advertencia de seguridad para respaldar llaves SSH privadas.
+* **Python y Node:** Lista de paquetes globales (`pip freeze`, `npm list -g`).
+* **Variables de Entorno:** Claves de registro completas del sistema y de usuario (`.reg`).
+* **Inventario General:** Lista de programas instalados en HKLM (64 y 32 bits) y HKCU deduplicados.
 
 ---
 
-## 📁 Estructura del Respaldo Generado
+## Estructura del Respaldo Generado
 
 El script crea una carpeta en tu Escritorio (`Backup_Windows_Dev_YYYY-MM-DD_HH-mm/`) conteniendo:
 
@@ -48,9 +44,7 @@ Backup_Windows_Dev_2026-09-07_13-00/
 
 ---
 
----
-
-## 💻 Flujo de Trabajo Paso a Paso
+## Flujo de Trabajo
 
 ### Paso 1: Generar el Respaldo (Antes de Formatear)
 

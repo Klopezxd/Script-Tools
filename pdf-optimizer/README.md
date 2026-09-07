@@ -1,14 +1,10 @@
-# 📄 PDF Optimizer (Multi-Engine & OCR-Safe)
+# PDF Optimizer
 
-[![OS - Multiplatform](https://img.shields.io/badge/OS-Windows%20%7C%20Linux%20%7C%20macOS-0078D6.svg)](https://github.com/Klopezxd/Script-Tools)
-[![Python - 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![Preservation - OCR Safe](https://img.shields.io/badge/OCR-100%25%20Text%20Preserved-brightgreen.svg)](#)
-
-Suite de optimización de documentos PDF multiplataforma de nivel profesional. Integra un motor híbrido que combina re-muestreo inteligente de imágenes en memoria (**PyMuPDF + Pillow**), compresión estructural de flujos de objetos (**pikepdf**) y motor profundo opcional (**Ghostscript**), garantizando en todo momento la preservación íntegra de la capa de texto seleccionable y OCR.
+Suite de optimización de documentos PDF multiplataforma de alto rendimiento. Integra un motor híbrido que combina re-muestreo inteligente de imágenes en memoria (**PyMuPDF + Pillow**), compresión estructural de flujos de objetos (**pikepdf**) y motor profundo opcional (**Ghostscript**), garantizando en todo momento la preservación íntegra de la capa de texto seleccionable y OCR.
 
 ---
 
-## 🌟 Características Destacadas
+## Características
 
 * **100% Funcional sin Dependencias Externas:** El motor nativo en Python no requiere instalar Ghostscript ni binarios externos de terceros para operar al máximo rendimiento.
 * **Preservación Estricta de OCR:** Verifica automáticamente antes y después de cada compresión que la capa de texto seleccionable no sufra alteración o borrado accidental.
@@ -22,7 +18,7 @@ Suite de optimización de documentos PDF multiplataforma de nivel profesional. I
 
 ---
 
-## 📋 Requisitos e Instalación
+## Requisitos e Instalación
 
 1. **Python 3.10+**
 2. **Dependencias de Python:**
@@ -33,9 +29,7 @@ Suite de optimización de documentos PDF multiplataforma de nivel profesional. I
 
 ---
 
----
-
-## ⚡ Inicio Rápido (3 Formas de Uso)
+## Guía de Uso
 
 ### 1. Menú Contextual de Windows (Clic Derecho)
 Instala los accesos directos ejecutando `scripts/install_context_menu.bat` en la raíz.
@@ -45,7 +39,7 @@ Luego haz **clic derecho** sobre cualquier archivo `.pdf` y selecciona:
 ### 2. Arrastrar y Soltar (Drag & Drop)
 Arrastra cualquier archivo `.pdf` sobre `pdf_optimizer.bat` en el Explorador de Windows para procesarlo de inmediato en modo equilibrado.
 
-### 3. Línea de Comandos (CLI Profesional)
+### 3. Línea de Comandos (CLI)
 ```bash
 # Vía CLI Unificada (raíz)
 python tools.py pdf documento.pdf --profile balanced
@@ -56,7 +50,7 @@ python pdf_optimizer.py documento.pdf --profile balanced
 
 ---
 
-## 📊 Comparativa de Perfiles
+## Comparativa de Perfiles
 
 | Perfil | DPI de Imagen | Calidad JPEG | Reducción Típica | Caso de Uso Ideal |
 |---|---|---|---|---|
@@ -67,7 +61,7 @@ python pdf_optimizer.py documento.pdf --profile balanced
 
 ---
 
-## 📋 Recetas Frecuentes (Copiar y Pegar)
+## Recetas Frecuentes
 
 | Objetivo | Comando | Explicación Técnica |
 |---|---|---|
@@ -79,7 +73,7 @@ python pdf_optimizer.py documento.pdf --profile balanced
 
 ---
 
-## ⚙️ Parámetros de CLI
+## Parámetros de CLI
 
 | Parámetro | Opciones | Por Defecto | Descripción |
 |---|---|---|---|

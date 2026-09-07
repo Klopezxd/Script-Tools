@@ -1,16 +1,12 @@
-# 🩺 VS Code & Developer Environment Doctor
-
-[![OS - Multiplatform](https://img.shields.io/badge/OS-Windows%20%7C%20Linux%20%7C%20macOS-0078D6.svg)](https://github.com/Klopezxd/Script-Tools)
-[![Python - 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![Diagnostics](https://img.shields.io/badge/Health--Check-Automated-green.svg)](#)
+# VS Code & Dev Environment Doctor
 
 Diagnóstico de salud integral del entorno de desarrollo y resolución de incidencias para Visual Studio Code y toolchains de programación (Git, compiladores C/C++, CMake, Ninja, .NET, Python, Node y herramientas multimedia).
 
 ---
 
-## 🌟 Funcionalidad
+## Funcionalidades
 
-1. **🩺 Dev Doctor Multiplataforma (`dev_doctor.py`):**
+1. **Dev Doctor Multiplataforma (`dev_doctor.py`):**
    * Audita la disponibilidad, versión y ruta de:
      * **Editores:** Visual Studio Code CLI (`code`), Insiders y arquitectura detectada.
      * **Control de Versiones:** Git, identidad del usuario (`user.name`, `user.email`).
@@ -20,14 +16,14 @@ Diagnóstico de salud integral del entorno de desarrollo y resolución de incide
    * Emite una tabla formateada con recomendaciones de instalación precisas por gestor de paquetes (`scoop`, `winget`, `brew`, `apt`).
    * Soporta salida en JSON estructurado para auditorías (`--json`).
 
-2. **🛠️ VS Code PATH Doctor para Windows (`check_vscode_path.ps1`):**
+2. **VS Code PATH Doctor para Windows (`check_vscode_path.ps1`):**
    * Detecta si el comando `code` responde correctamente en la consola de Windows.
    * Localiza automáticamente la carpeta `bin` de VS Code en `%LOCALAPPDATA%` o `Program Files`.
    * Permite reinsertar la ruta permanentemente en la variable `PATH` del Registro de Windows del usuario sin requerir permisos de administrador.
 
 ---
 
-## 💻 Modos de Uso
+## Modos de Uso
 
 ### 1. Auditoría del Toolchain (Multiplataforma)
 ```bash
@@ -57,7 +53,7 @@ El script localizará automáticamente tu instalación de VS Code y reescribirá
 
 ---
 
-## 🔍 Componentes Auditados por Dev Doctor
+## Componentes Auditados por Dev Doctor
 
 | Categoría | Binarios y Entornos Comprobados | Acciones Correctivas Sugeridas |
 |---|---|---|
