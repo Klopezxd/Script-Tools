@@ -1,9 +1,9 @@
 # Script-Tools
 
-[![CI](https://github.com/Klopezxd/Script-Tools/actions/workflows/ci.yml/badge.svg)](https://github.com/Klopezxd/Script-Tools/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Klopezxd/Script-Tools?style=flat-square&color=blue)](https://github.com/Klopezxd/Script-Tools/releases)
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg?style=flat-square)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/Klopezxd/Script-Tools/ci.yml?branch=main&label=CI&logo=githubactions&logoColor=white&style=flat-square)](https://github.com/Klopezxd/Script-Tools/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Klopezxd/Script-Tools?style=flat-square&logo=github&logoColor=white&label=Release)](https://github.com/Klopezxd/Script-Tools/releases)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 Colección modular de herramientas de automatización para desarrolladores: compresión multimedia acelerada por GPU, optimización de documentos con preservación estricta de OCR y auditoría integral de entornos de desarrollo.
 

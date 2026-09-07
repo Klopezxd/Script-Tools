@@ -1,4 +1,4 @@
-name: Release - Standalone Multiplatform Binaries
+name: Release
 
 on:
   push:

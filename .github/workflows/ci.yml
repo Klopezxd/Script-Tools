@@ -1,4 +1,4 @@
-name: CI - Script-Tools Quality & Multiplatform Suite
+name: CI
 
 on:
   push:
