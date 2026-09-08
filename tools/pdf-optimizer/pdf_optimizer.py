@@ -174,23 +174,16 @@ def optimize_images_in_doc(
         task = progress.add_task("Optimizando imágenes incrustadas...", total=len(unique_images))
         for page, xref in unique_images:
             try:
-                # Check for Soft Masks (/SMask) or Color-key Masks (/Mask)
+                # Check for color-key masks (/Mask [min max...])
                 xref_str = doc.xref_object(xref)
-                if "/SMask" in xref_str or "/Mask" in xref_str:
-                    # CRITICAL: Preserve transparency!
-                    # Signatures, stamps, and watermarks use /SMask or /Mask.
-                    # Recompressing them to opaque JPEG destroys the mask, creating black boxes
-                    # or opaque overlays that obscure text.
+                if "/Mask" in xref_str and "/SMask" not in xref_str:
+                    # Color-key masks (like vector watermarks) are transparent indexed graphics; protect them
                     continue
 
                 base_image = doc.extract_image(xref)
                 if not base_image:
                     continue
 
-                if base_image.get("smask", 0) != 0:
-                    continue
-
-                image_bytes = base_image["image"]
                 orig_width = base_image["width"]
                 orig_height = base_image["height"]
 
@@ -198,20 +191,57 @@ def optimize_images_in_doc(
                 if orig_width < 32 and orig_height < 32:
                     continue
 
-                # Load into PIL
-                pil_img = Image.open(io.BytesIO(image_bytes))
+                # Determine display bounding box on page
+                rects = page.get_image_rects(xref)
+                if rects:
+                    disp_w = max(rects[0].width, 10.0)
+                    disp_h = max(rects[0].height, 10.0)
+                else:
+                    disp_w = max(page.rect.width, 10.0)
+                    disp_h = max(page.rect.height, 10.0)
 
-                # Estimate page scale / DPI based on actual page point geometry
-                page_rect = page.rect
-                page_max_pt = max(page_rect.width, page_rect.height)
-                if page_max_pt <= 0:
-                    page_max_pt = 792.0
-                target_max = int((page_max_pt / 72.0) * target_dpi)
+                target_w = max(64, int((disp_w / 72.0) * target_dpi))
+                target_h = max(64, int((disp_h / 72.0) * target_dpi))
+                scale = min(1.0, target_w / float(orig_width), target_h / float(orig_height))
 
-                max_dim = max(orig_width, orig_height)
-                needs_resample = max_dim > target_max
-                if needs_resample:
-                    scale = target_max / float(max_dim)
+                # Handle images with Soft Masks (/SMask) e.g. digital signatures and stamps
+                smask_xref = base_image.get("smask", 0)
+                if not smask_xref and "/SMask" in xref_str:
+                    smask_key = doc.xref_get_key(xref, "SMask")
+                    if smask_key[0] == "xref":
+                        try:
+                            smask_xref = int(smask_key[1].split()[0])
+                        except (ValueError, IndexError):
+                            smask_xref = 0
+
+                if smask_xref != 0:
+                    smask_img = doc.extract_image(smask_xref)
+                    if smask_img:
+                        pil_base = Image.open(io.BytesIO(base_image["image"])).convert("RGB")
+                        pil_mask = Image.open(io.BytesIO(smask_img["image"])).convert("L")
+
+                        if scale < 0.95:
+                            new_w = max(1, int(orig_width * scale))
+                            new_h = max(1, int(orig_height * scale))
+                            pil_base = pil_base.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                            pil_mask = pil_mask.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+                        pil_rgba = pil_base.convert("RGBA")
+                        pil_rgba.putalpha(pil_mask)
+                        out_buffer = io.BytesIO()
+                        pil_rgba.save(out_buffer, format="PNG", optimize=True)
+                        new_bytes = out_buffer.getvalue()
+
+                        total_orig_len = len(base_image["image"]) + len(smask_img["image"])
+                        if len(new_bytes) < total_orig_len:
+                            page.replace_image(xref, stream=new_bytes)
+                            images_compressed += 1
+                    continue
+
+                # Load standard image into PIL
+                pil_img = Image.open(io.BytesIO(base_image["image"]))
+
+                if scale < 0.95:
                     new_width = max(1, int(orig_width * scale))
                     new_height = max(1, int(orig_height * scale))
                     pil_img = pil_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
@@ -235,7 +265,7 @@ def optimize_images_in_doc(
                 new_bytes = out_buffer.getvalue()
 
                 # Only replace if new image actually saves space
-                if len(new_bytes) < len(image_bytes):
+                if len(new_bytes) < len(base_image["image"]):
                     page.replace_image(xref, stream=new_bytes)
                     images_compressed += 1
 
