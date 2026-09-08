@@ -24,11 +24,25 @@ Todas las herramientas independientes se encuentran organizadas en el directorio
 
 ---
 
+## Modo Interactivo & Menú TUI (`tools.bat` / `tools menu`)
+
+Para una experiencia visual guiada con menús enriquecidos en terminal:
+
+* **En Windows:** Haz doble clic directamente sobre [**`tools.bat`**](tools.bat) en la raíz del repositorio.
+* **Desde cualquier terminal:** Ejecuta `python tools.py menu` (o `tools menu`).
+
+Incluye selector gráfico de archivos, configuración guiada de presets (WhatsApp 15MB, Discord 25MB, AV1, GPU, perfiles PDF con protección OCR), diagnósticos integrados y pausas automáticas que evitan el cierre abrupto de ventanas al finalizar.
+
+---
+
 ## CLI Central (`tools.py`)
 
-El despachador central en la raíz del repositorio permite ejecutar cualquier herramienta de forma unificada:
+El despachador central en la raíz del repositorio permite ejecutar cualquier herramienta de forma directa y automatizable:
 
 ```bash
+# 0. Menú interactivo visual guiado
+python tools.py menu
+
 # 1. Compresión de video con límite estricto de tamaño (WhatsApp / Discord)
 python tools.py video clase.mp4 --target-size 15MB
 

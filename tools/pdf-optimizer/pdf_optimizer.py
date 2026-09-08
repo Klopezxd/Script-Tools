@@ -433,6 +433,93 @@ def interactive_gui_picker() -> Optional[Path]:
         return None
 
 
+def interactive_workflow() -> int:
+    """Guided interactive workflow with Rich UI when no arguments are provided."""
+    try:
+        from rich import box
+        from rich.panel import Panel
+        from rich.prompt import Confirm, Prompt
+
+        console.print()
+        console.print(
+            Panel(
+                "[bold cyan]📄  OPTIMIZADOR DE DOCUMENTOS PDF - SCRIPT-TOOLS[/bold cyan]\n"
+                "[dim]Preservación Garantizada 100% OCR, Re-muestreo y Reducción Híbrida[/dim]",
+                box=box.ROUNDED,
+                border_style="cyan",
+            )
+        )
+
+        console.print("[bold]¿Cómo deseas seleccionar el documento PDF?[/bold]")
+        console.print("  [1] 📂 Abrir ventana de selección de archivos (Recomendado)")
+        console.print("  [2] ✍️  Escribir o arrastrar la ruta del PDF aquí")
+        console.print("  [0] 🚪 Cancelar")
+        pick_mode = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
+        if pick_mode == "0":
+            return 0
+
+        pdf_file = None
+        if pick_mode == "1":
+            pdf_file = interactive_gui_picker()
+            if not pdf_file:
+                console.print("[yellow]Selección cancelada.[/yellow]")
+                return 0
+        else:
+            raw = Prompt.ask("Ruta del archivo PDF").strip().strip('"').strip("'")
+            pdf_file = Path(raw)
+            if not pdf_file.exists():
+                console.print(f"[bold red]El archivo no existe: {pdf_file}[/bold red]")
+                Prompt.ask("\n[dim]Presiona Enter para salir...[/dim]")
+                return 1
+
+        console.print(f"\n[green]Archivo seleccionado:[/green] [bold]{pdf_file.name}[/bold]")
+        console.print("[bold]Selecciona el perfil de optimización:[/bold]")
+        console.print("  [1] ⚖️  Equilibrado (150 DPI - Tareas universitarias, correo, lectura) [Recomendado]")
+        console.print("  [2] 📱 Pantalla / Aula Virtual (72 DPI - Cuotas estrictas < 5 MB)")
+        console.print("  [3] 🖨️  Impresión Formal (300 DPI - Portafolios y documentos oficiales)")
+        console.print("  [4] 💎 Sin Pérdida (0% degradación visual, reorganización de objetos)")
+        console.print("  [0] 🚪 Cancelar")
+
+        profile_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "0"], default="1")
+        if profile_choice == "0":
+            return 0
+
+        profiles = {
+            "1": "balanced",
+            "2": "screen",
+            "3": "print",
+            "4": "lossless",
+        }
+        selected_profile = profiles[profile_choice]
+
+        strict_ocr = Confirm.ask("¿Deseas verificar y proteger estrictamente la capa de texto OCR?", default=True)
+
+        out_file = pdf_file.parent / f"{pdf_file.stem}_optimized.pdf"
+        console.print(f"\n[cyan]Iniciando optimización de [bold]{pdf_file.name}[/bold] con perfil '{selected_profile}'...[/cyan]\n")
+        ok = run_single_optimization(
+            input_path=pdf_file,
+            output_path=out_file,
+            profile_key=selected_profile,
+            engine="native",
+            strict_ocr=strict_ocr,
+        )
+        if ok:
+            console.print(f"\n[bold green]✓ Documento optimizado exitosamente: {out_file}[/bold green]")
+        else:
+            console.print("\n[bold red]✗ No se pudo completar la optimización del PDF.[/bold red]")
+
+        Prompt.ask("\n[bold green]Presiona Enter para salir...[/bold green]")
+        return 0 if ok else 1
+    except Exception as e:
+        console.print(f"[bold red]Error: {e}[/bold red]")
+        if sys.stdin.isatty():
+            try:
+                input("\nPresiona Enter para salir...")
+            except Exception:
+                pass
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="PDF Optimizer - Multi-Engine, OCR-Safe Document Compression Suite",
@@ -477,12 +564,10 @@ Ejemplos:
     args = parser.parse_args()
 
     if not args.input:
-        picked = interactive_gui_picker()
-        if picked:
-            input_path = picked
-        else:
-            parser.print_help()
-            return 1
+        if sys.stdin.isatty():
+            return interactive_workflow()
+        parser.print_help()
+        return 1
     else:
         input_path = Path(args.input)
         if not input_path.exists():

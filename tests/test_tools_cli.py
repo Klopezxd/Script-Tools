@@ -82,7 +82,7 @@ def test_tools_invalid_subcommand():
 
 def test_tools_subcommands_help():
     """All subcommands must respond to --help cleanly."""
-    for subcmd in ["video", "pdf", "doctor", "completion"]:
+    for subcmd in ["menu", "video", "pdf", "doctor", "completion"]:
         proc = run_tool(subcmd, "--help")
         assert proc.returncode == 0
         assert "usage:" in proc.stdout or "usage:" in proc.stderr or "Uso:" in proc.stdout

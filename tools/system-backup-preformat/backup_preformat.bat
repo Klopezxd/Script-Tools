@@ -9,13 +9,12 @@ title Respaldo Completo Pre-Formateo
 color 0A
 cls
 
+echo ==================================================================
+echo                RESPALDO COMPLETO PRE-FORMATEO
 echo.
-echo  ╔══════════════════════════════════════════════════════════════╗
-echo  ║                 RESPALDO COMPLETO PRE-FORMATEO               ║
-echo  ║                                                              ║
-echo  ║  Este script hara un respaldo completo de tu configuracion   ║
-echo  ║  antes de formatear tu PC                                    ║
-echo  ╚══════════════════════════════════════════════════════════════╝
+echo   Este script hara un respaldo completo de tu configuracion
+echo   antes de formatear tu PC.
+echo ==================================================================
 echo.
 
 REM Verificar si el archivo PowerShell existe

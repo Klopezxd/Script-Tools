@@ -11,6 +11,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Confirm, Prompt
+from rich.table import Table
+
+console = Console()
+
 # Enable UTF-8 on Windows
 if sys.platform == "win32":
     try:
@@ -228,6 +236,280 @@ def dispatch_backup(extra_args: list[str]) -> int:
         return 1
 
 
+def _interactive_video():
+    console.print()
+    console.print(
+        Panel(
+            "[bold cyan]🎥  Compresor de Video Multicódec & Aceleración GPU[/bold cyan]",
+            border_style="cyan",
+            box=box.ROUNDED,
+        )
+    )
+
+    import shutil
+
+    if not shutil.which("ffmpeg"):
+        console.print(
+            Panel(
+                "[bold red]FFmpeg no está instalado en el sistema.[/bold red]\n\n"
+                "El compresor requiere FFmpeg en el PATH para procesar y codificar video.\n"
+                "Puedes instalarlo en Windows ejecutando:\n"
+                "  [bold cyan]winget install Gyan.FFmpeg[/bold cyan]\n"
+                "o con Scoop:\n"
+                "  [bold cyan]scoop install ffmpeg[/bold cyan]",
+                title="[bold yellow]Dependencia Requerida[/bold yellow]",
+                border_style="red",
+                box=box.ROUNDED,
+            )
+        )
+        if sys.platform == "win32" and shutil.which("winget"):
+            if Confirm.ask("¿Deseas que Script-Tools intente instalar FFmpeg automáticamente con winget ahora?", default=True):
+                console.print("\n[cyan]Ejecutando: winget install -e --id Gyan.FFmpeg...[/cyan]")
+                subprocess.run(["winget", "install", "-e", "--id", "Gyan.FFmpeg"])
+                console.print("[yellow]Nota: Si la instalación terminó, reinicia tu terminal para que tome efecto en el PATH.[/yellow]")
+        Prompt.ask("\n[dim]Presiona Enter para continuar...[/dim]")
+        return
+
+    console.print("[bold]¿Cómo deseas seleccionar el video?[/bold]")
+    console.print("  [1] 📂 Abrir ventana de selección de archivos (Recomendado)")
+    console.print("  [2] ✍️  Escribir o arrastrar la ruta del video aquí")
+    console.print("  [0] ↩️  Volver al menú principal")
+
+    mode = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
+    if mode == "0":
+        return
+
+    video_path = None
+    if mode == "1":
+        import compress_video
+
+        video_path = compress_video.interactive_gui_picker()
+        if not video_path:
+            console.print("[yellow]Selección cancelada.[/yellow]")
+            return
+    else:
+        raw_path = Prompt.ask("Ruta del archivo de video").strip().strip('"').strip("'")
+        video_path = Path(raw_path)
+        if not video_path.exists():
+            console.print(f"[bold red]El archivo no existe: {video_path}[/bold red]")
+            Prompt.ask("[dim]Presiona Enter para continuar...[/dim]")
+            return
+
+    console.print(f"\n[green]Archivo seleccionado:[/green] [bold]{video_path.name}[/bold]")
+    console.print("[bold]Selecciona el perfil de compresión:[/bold]")
+    console.print("  [1] 💬 WhatsApp / Correo (< 15 MB exacto, cálculo de 2 pasadas)")
+    console.print("  [2] 🎮 Discord Free (< 25 MB, compatibilidad universal H.264)")
+    console.print("  [3] ⚖️  Alta Fidelidad Equilibrada (1080p, H.265 / HEVC) [Recomendado]")
+    console.print("  [4] 🚀 Máxima Eficiencia AV1 (Nuevo códec, máxima reducción)")
+    console.print("  [5] ⚡ Ultra Rápido por Hardware GPU (NVENC / QSV / AMF)")
+    console.print("  [0] ↩️  Volver")
+
+    preset_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "5", "0"], default="3")
+    if preset_choice == "0":
+        return
+
+    extra_args = [str(video_path)]
+    if preset_choice == "1":
+        extra_args += ["--target-size", "15MB"]
+    elif preset_choice == "2":
+        extra_args += ["--target-size", "25MB", "--codec", "h264"]
+    elif preset_choice == "3":
+        extra_args += ["--codec", "hevc", "--preset", "balanced"]
+    elif preset_choice == "4":
+        extra_args += ["--codec", "av1", "--preset", "high"]
+    elif preset_choice == "5":
+        extra_args += ["--hwaccel", "auto", "--preset", "draft"]
+
+    console.print(f"\n[cyan]Iniciando compresión de [bold]{video_path.name}[/bold]...[/cyan]\n")
+    dispatch_video(extra_args)
+    Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
+
+
+def _interactive_pdf():
+    console.print()
+    console.print(
+        Panel(
+            "[bold cyan]📄  Optimizador de Documentos PDF (OCR-Safe)[/bold cyan]",
+            border_style="cyan",
+            box=box.ROUNDED,
+        )
+    )
+
+    console.print("[bold]¿Cómo deseas seleccionar el documento PDF?[/bold]")
+    console.print("  [1] 📂 Abrir ventana de selección de archivos (Recomendado)")
+    console.print("  [2] ✍️  Escribir o arrastrar la ruta del PDF aquí")
+    console.print("  [0] ↩️  Volver al menú principal")
+
+    mode = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
+    if mode == "0":
+        return
+
+    pdf_path = None
+    if mode == "1":
+        import pdf_optimizer
+
+        pdf_path = pdf_optimizer.interactive_gui_picker()
+        if not pdf_path:
+            console.print("[yellow]Selección cancelada.[/yellow]")
+            return
+    else:
+        raw_path = Prompt.ask("Ruta del documento PDF").strip().strip('"').strip("'")
+        pdf_path = Path(raw_path)
+        if not pdf_path.exists():
+            console.print(f"[bold red]El archivo no existe: {pdf_path}[/bold red]")
+            Prompt.ask("[dim]Presiona Enter para continuar...[/dim]")
+            return
+
+    console.print(f"\n[green]Archivo seleccionado:[/green] [bold]{pdf_path.name}[/bold]")
+    console.print("[bold]Selecciona el perfil de optimización:[/bold]")
+    console.print("  [1] ⚖️  Equilibrado (150 DPI - Tareas universitarias, correo, lectura) [Recomendado]")
+    console.print("  [2] 📱 Pantalla / Aula Virtual (72 DPI - Cuotas estrictas < 5 MB)")
+    console.print("  [3] 🖨️  Impresión Formal (300 DPI - Portafolios y documentos oficiales)")
+    console.print("  [4] 💎 Sin Pérdida (0% degradación visual, reorganización de objetos)")
+    console.print("  [0] ↩️  Volver")
+
+    profile_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "0"], default="1")
+    if profile_choice == "0":
+        return
+
+    profiles = {
+        "1": "balanced",
+        "2": "screen",
+        "3": "print",
+        "4": "lossless",
+    }
+    selected_profile = profiles[profile_choice]
+
+    strict_ocr = Confirm.ask("¿Deseas verificar y proteger estrictamente la capa de texto OCR?", default=True)
+
+    extra_args = [str(pdf_path), "--profile", selected_profile]
+    if strict_ocr:
+        extra_args.append("--strict-ocr")
+
+    console.print(f"\n[cyan]Iniciando optimización de [bold]{pdf_path.name}[/bold] con perfil '{selected_profile}'...[/cyan]\n")
+    dispatch_pdf(extra_args)
+    Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
+
+
+def _interactive_doctor():
+    console.print()
+    console.print(
+        Panel(
+            "[bold cyan]🩺  Auditoría del Entorno de Desarrollo (Dev Doctor)[/bold cyan]",
+            border_style="cyan",
+            box=box.ROUNDED,
+        )
+    )
+    dispatch_doctor([])
+    Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
+
+
+def _interactive_backup():
+    console.print()
+    console.print(
+        Panel(
+            "[bold cyan]💾  Respaldo Exhaustivo Pre-Formateo de Windows[/bold cyan]\n"
+            "[dim]Genera un snapshot del entorno dev y un asistente interactivo REINSTALL.ps1[/dim]",
+            border_style="cyan",
+            box=box.ROUNDED,
+        )
+    )
+
+    if sys.platform != "win32":
+        console.print("[bold red]Esta herramienta está diseñada específicamente para sistemas Windows.[/bold red]")
+        Prompt.ask("\n[dim]Presiona Enter para continuar...[/dim]")
+        return
+
+    console.print("Se creará una carpeta en tu Escritorio conteniendo el inventario de:")
+    console.print("  • Paquetes Winget, aplicaciones Scoop y Chocolatey")
+    console.print("  • Extensiones, settings.json y snippets de VS Code")
+    console.print("  • Compiladores (MSVC, GCC, Clang, CMake, Ninja)")
+    console.print("  • Runtimes (Python, Node.js, .NET, Rust/Cargo)")
+    console.print("  • Variables de entorno del sistema y de usuario (.reg)")
+    console.print("  • Asistente interactivo de restauración [bold]REINSTALL.ps1[/bold]\n")
+
+    if Confirm.ask("¿Deseas iniciar el respaldo ahora?", default=True):
+        dispatch_backup([])
+    Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
+
+
+def _interactive_context_menu():
+    console.print()
+    console.print(
+        Panel(
+            "[bold cyan]🖱️  Integración al Menú Contextual de Windows Explorer[/bold cyan]\n"
+            "[dim]Permite hacer clic derecho en cualquier video o PDF para optimizarlo al instante[/dim]",
+            border_style="cyan",
+            box=box.ROUNDED,
+        )
+    )
+
+    if sys.platform != "win32":
+        console.print("[bold red]La integración al Explorador de Windows es exclusiva para Windows.[/bold red]")
+        Prompt.ask("\n[dim]Presiona Enter para continuar...[/dim]")
+        return
+
+    console.print("[bold]Selecciona una acción:[/bold]")
+    console.print("  [1] 📥 Instalar accesos directos (Clic derecho > Comprimir / Optimizar)")
+    console.print("  [2] 📤 Desinstalar accesos directos de Script-Tools")
+    console.print("  [0] ↩️  Volver")
+
+    choice = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
+    if choice == "1":
+        script = ROOT_DIR / "scripts" / "install_context_menu.ps1"
+        subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
+    elif choice == "2":
+        script = ROOT_DIR / "scripts" / "uninstall_context_menu.ps1"
+        subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
+    Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
+
+
+def run_interactive_menu() -> int:
+    """Renders the master interactive terminal dashboard and dispatches actions."""
+    while True:
+        console.print()
+        banner = (
+            "[bold cyan]🛠️  SCRIPT-TOOLS DEVELOPER SUITE[/bold cyan]\n"
+            "[dim]Automatización, Optimización Multimedia y Diagnóstico de Sistemas[/dim]"
+        )
+        console.print(Panel(banner, border_style="cyan", box=box.ROUNDED))
+
+        table = Table(show_header=False, box=box.SIMPLE, padding=(0, 2), expand=False)
+        table.add_column("Opción", style="bold green", width=6)
+        table.add_column("Herramienta", style="bold white", width=26)
+        table.add_column("Capacidades Clave", style="dim")
+
+        table.add_row("[1]", "🎥 Comprimir Video", "AV1, HEVC, WhatsApp (15MB), Discord, Aceleración GPU")
+        table.add_row("[2]", "📄 Optimizar PDF", "150/72 DPI, preservación 100% OCR, ahorro hasta 85%")
+        table.add_row("[3]", "🩺 Auditoría Dev Doctor", "Salud de VS Code, Git, Compiladores (C/C++), Runtimes, PATH")
+        table.add_row("[4]", "💾 Respaldo Pre-Formateo", "Snapshot de paquetes Winget/Scoop, VS Code, variables de entorno")
+        table.add_row("[5]", "🖱️ Menú Contextual", "Instalar / Desinstalar accesos de clic derecho en Windows Explorer")
+        table.add_row("[0]", "🚪 Salir", "Cerrar la suite")
+
+        console.print(table)
+        console.print()
+
+        choice = Prompt.ask(
+            "[bold yellow]Selecciona una opción[/bold yellow]",
+            choices=["1", "2", "3", "4", "5", "0"],
+            default="1",
+        )
+
+        if choice == "0":
+            console.print("\n[green]¡Hasta pronto![/green]\n")
+            return 0
+        elif choice == "1":
+            _interactive_video()
+        elif choice == "2":
+            _interactive_pdf()
+        elif choice == "3":
+            _interactive_doctor()
+        elif choice == "4":
+            _interactive_backup()
+        elif choice == "5":
+            _interactive_context_menu()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="tools",
@@ -235,13 +517,16 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Comandos disponibles:
+  tools menu        Menú interactivo visual TUI con navegación guiada
   tools video       Compresor de video acelerado por GPU (AV1, H.265, H.264, 2-Pass Target Size)
-  tools pdf         Optimizador de PDFs con preservacion estricta de OCR y motor hibrido
-  tools doctor      Auditoria de salud del entorno de desarrollo (VS Code, Git, C/C++, Runtimes)
+  tools pdf         Optimizador de PDFs con preservación estricta de OCR y motor híbrido
+  tools doctor      Auditoría de salud del entorno de desarrollo (VS Code, Git, C/C++, Runtimes)
   tools backup      Snapshot integral pre-formateo para Windows (Winget, Scoop, VS Code, Git)
   tools completion  Generador de auto-completado de terminal (powershell, bash, zsh)
 
 Ejemplos:
+  tools.bat                         (Doble clic o launcher directo en Windows)
+  python tools.py menu              (Menú interactivo visual guiado)
   python tools.py video clase.mp4 --target-size 15MB
   python tools.py pdf reporte.pdf --profile balanced
   python tools.py doctor
@@ -250,9 +535,16 @@ Ejemplos:
         """,
     )
     parser.add_argument("-v", "--version", action="version", version="%(prog)s 2.0.0")
+    parser.add_argument("-i", "--interactive", action="store_true", help="Lanza el menú interactivo visual TUI")
 
     subparsers = parser.add_subparsers(dest="command", help="Herramienta a ejecutar")
 
+    # menu
+    subparsers.add_parser(
+        "menu",
+        help="Abre el menú interactivo visual en la terminal",
+        add_help=False,
+    )
     # video
     subparsers.add_parser(
         "video",
@@ -289,6 +581,12 @@ Ejemplos:
         return 0
 
     parsed_args, extra_args = parser.parse_known_args()
+
+    if parsed_args.interactive or parsed_args.command == "menu":
+        if "-h" in extra_args or "--help" in extra_args:
+            print("Uso: tools menu [-h]\n\nAbre la interfaz interactiva visual (TUI) para acceder a todas las herramientas.")
+            return 0
+        return run_interactive_menu()
 
     command = parsed_args.command
     if not command:

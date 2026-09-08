@@ -82,13 +82,40 @@ def get_ffmpeg_binary() -> str:
     """Returns path to ffmpeg or exits with helpful instructions."""
     binary = shutil.which("ffmpeg")
     if not binary:
-        sys.stderr.write(
-            "\n[ERROR] FFmpeg is not installed or not found in system PATH.\n"
-            "Please install FFmpeg to continue:\n"
-            "  - Windows: scoop install ffmpeg  OR  winget install Gyan.FFmpeg\n"
-            "  - macOS:   brew install ffmpeg\n"
-            "  - Linux:   sudo apt install ffmpeg\n\n"
-        )
+        try:
+            from rich import box
+            from rich.console import Console
+            from rich.panel import Panel
+
+            c = Console()
+            c.print()
+            c.print(
+                Panel(
+                    "[bold red]FFmpeg no está instalado o no se encuentra en el PATH del sistema.[/bold red]\n\n"
+                    "El compresor requiere FFmpeg para la codificación y decodificación de video.\n\n"
+                    "Comando para instalar en Windows (PowerShell / CMD):\n"
+                    "  [bold cyan]winget install Gyan.FFmpeg[/bold cyan]\n"
+                    "  o con Scoop:\n"
+                    "  [bold cyan]scoop install ffmpeg[/bold cyan]\n\n"
+                    "En macOS: [bold cyan]brew install ffmpeg[/bold cyan] | En Linux: [bold cyan]sudo apt install ffmpeg[/bold cyan]",
+                    title="[bold yellow]Dependencia Requerida: FFmpeg[/bold yellow]",
+                    border_style="red",
+                    box=box.ROUNDED,
+                )
+            )
+        except Exception:
+            sys.stderr.write(
+                "\n[ERROR] FFmpeg is not installed or not found in system PATH.\n"
+                "Please install FFmpeg to continue:\n"
+                "  - Windows: scoop install ffmpeg  OR  winget install Gyan.FFmpeg\n"
+                "  - macOS:   brew install ffmpeg\n"
+                "  - Linux:   sudo apt install ffmpeg\n\n"
+            )
+        if sys.stdin.isatty():
+            try:
+                input("\nPresiona Enter para continuar...")
+            except Exception:
+                pass
         sys.exit(1)
     return binary
 
@@ -531,6 +558,129 @@ def interactive_gui_picker() -> Optional[Path]:
         return None
 
 
+def interactive_workflow() -> int:
+    """Guided interactive workflow with Rich UI when no arguments are provided."""
+    try:
+        from rich import box
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.prompt import Confirm, Prompt
+
+        c = Console()
+        c.print()
+        c.print(
+            Panel(
+                "[bold cyan]🎥  COMPRESOR DE VIDEO - SCRIPT-TOOLS[/bold cyan]\n"
+                "[dim]Aceleración por GPU, Multi-Códec (AV1/HEVC/H264) y Modo Target 2-Pass[/dim]",
+                box=box.ROUNDED,
+                border_style="cyan",
+            )
+        )
+
+        if not shutil.which("ffmpeg"):
+            c.print(
+                Panel(
+                    "[bold red]FFmpeg no está instalado en el sistema.[/bold red]\n\n"
+                    "Para comprimir videos se requiere FFmpeg en el PATH.\n"
+                    "Puedes instalarlo en Windows ejecutando:\n"
+                    "  [bold cyan]winget install Gyan.FFmpeg[/bold cyan]\n"
+                    "  o con Scoop: [bold cyan]scoop install ffmpeg[/bold cyan]",
+                    title="[bold yellow]Dependencia Requerida[/bold yellow]",
+                    border_style="red",
+                    box=box.ROUNDED,
+                )
+            )
+            if sys.platform == "win32" and shutil.which("winget"):
+                if Confirm.ask("¿Deseas que Script-Tools intente instalar FFmpeg con winget ahora?", default=True):
+                    subprocess.run(["winget", "install", "-e", "--id", "Gyan.FFmpeg"])
+                    c.print("[yellow]Si la instalación terminó, reinicia tu consola para actualizar el PATH.[/yellow]")
+            Prompt.ask("\n[dim]Presiona Enter para salir...[/dim]")
+            return 1
+
+        c.print("[bold]¿Cómo deseas seleccionar el video?[/bold]")
+        c.print("  [1] 📂 Abrir ventana de selección de archivos (Recomendado)")
+        c.print("  [2] ✍️  Escribir o arrastrar la ruta del video aquí")
+        c.print("  [0] 🚪 Cancelar")
+        pick_mode = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
+        if pick_mode == "0":
+            return 0
+
+        video_file = None
+        if pick_mode == "1":
+            video_file = interactive_gui_picker()
+            if not video_file:
+                c.print("[yellow]Selección cancelada.[/yellow]")
+                return 0
+        else:
+            raw = Prompt.ask("Ruta del archivo de video").strip().strip('"').strip("'")
+            video_file = Path(raw)
+            if not video_file.exists():
+                c.print(f"[bold red]El archivo no existe: {video_file}[/bold red]")
+                Prompt.ask("\n[dim]Presiona Enter para salir...[/dim]")
+                return 1
+
+        c.print(f"\n[green]Archivo seleccionado:[/green] [bold]{video_file.name}[/bold]")
+        c.print("[bold]Selecciona el perfil de compresión:[/bold]")
+        c.print("  [1] 💬 WhatsApp / Correo (< 15 MB exacto, cálculo de 2 pasadas)")
+        c.print("  [2] 🎮 Discord Free (< 25 MB, formato universal H.264)")
+        c.print("  [3] ⚖️  Alta Fidelidad Equilibrada (1080p, H.265 / HEVC) [Recomendado]")
+        c.print("  [4] 🚀 Máxima Eficiencia AV1 (Nuevo códec, máxima reducción)")
+        c.print("  [5] ⚡ Rápido por Hardware GPU (NVENC / QSV / AMF)")
+        c.print("  [0] 🚪 Cancelar")
+
+        preset_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "5", "0"], default="3")
+        if preset_choice == "0":
+            return 0
+
+        codec = "hevc"
+        preset = "balanced"
+        target_size = None
+        hwaccel = "auto"
+        resolution = "keep"
+
+        if preset_choice == "1":
+            target_size = "15MB"
+        elif preset_choice == "2":
+            target_size = "25MB"
+            codec = "h264"
+        elif preset_choice == "3":
+            codec = "hevc"
+            preset = "balanced"
+        elif preset_choice == "4":
+            codec = "av1"
+            preset = "high"
+        elif preset_choice == "5":
+            hwaccel = "auto"
+            preset = "draft"
+
+        out_file = video_file.parent / f"{video_file.stem}_compressed.mp4"
+        c.print(f"\n[cyan]Iniciando compresión de [bold]{video_file.name}[/bold]...[/cyan]\n")
+        ok = compress_video(
+            input_file=video_file,
+            output_file=out_file,
+            codec=codec,
+            preset=preset,
+            resolution=resolution,
+            target_size_str=target_size,
+            hwaccel=hwaccel,
+        )
+        if ok:
+            c.print(f"\n[bold green]✓ Video comprimido exitosamente: {out_file}[/bold green]")
+        else:
+            c.print("\n[bold red]✗ No se pudo completar la compresión del video.[/bold red]")
+
+        Prompt.ask("\n[bold green]Presiona Enter para salir...[/bold green]")
+        return 0 if ok else 1
+    except Exception as e:
+        sys.stderr.write(f"[ERROR] {e}\n")
+        if sys.stdin.isatty():
+            try:
+                input("\nPresiona Enter para salir...")
+            except Exception:
+                pass
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Video Compressor - Multiplatform, Hardware-Accelerated Video Tool",
@@ -604,12 +754,10 @@ Examples:
             return 1
 
     if not args.input:
-        picked = interactive_gui_picker()
-        if picked:
-            input_path = picked
-        else:
-            parser.print_help()
-            return 1
+        if sys.stdin.isatty():
+            return interactive_workflow()
+        parser.print_help()
+        return 1
     else:
         input_path = Path(args.input)
         if not input_path.exists():

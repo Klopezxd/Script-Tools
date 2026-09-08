@@ -378,6 +378,12 @@ def main() -> int:
         f"[red]{missing_count} no encontrados[/red]\n"
     )
 
+    if not args.json and sys.stdin.isatty():
+        try:
+            input("Presiona Enter para salir...")
+        except Exception:
+            pass
+
     return 0
 
 
