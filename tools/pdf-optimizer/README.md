@@ -7,12 +7,15 @@ Suite de optimización de documentos PDF multiplataforma de alto rendimiento. In
 ## Características
 
 * **100% Funcional sin Dependencias Externas:** El motor nativo en Python no requiere instalar Ghostscript ni binarios externos de terceros para operar al máximo rendimiento.
-* **Preservación Estricta de OCR:** Verifica automáticamente antes y después de cada compresión que la capa de texto seleccionable no sufra alteración o borrado accidental.
-* **4 Perfiles de Optimización Calibrados:**
-  * `lossless`: Compresión puramente estructural (object streams) con 0% de degradación visual.
+* **Preservación Estricta de OCR y Texto Vectorial:** Verifica automáticamente antes y después de cada compresión que la capa de texto seleccionable no sufra alteración o borrado accidental.
+* **Blindaje de Firmas Digitales y Transparencias:** Detecta y sincroniza matemáticamente máscaras suaves (`/SMask`), transparencias alfa y claves de color (`/Mask`). Cero recuadros negros en firmas y cero membretes opacos tapando texto.
+* **Escalado Adaptativo Inteligente (Bounding-Box DPI):** Calcula la resolución en función de los puntos físicos reales que ocupa cada elemento en la hoja, optimizando sellos y códigos QR a su escala exacta sin pixelación.
+* **5 Perfiles de Optimización Calibrados:**
+  * `extreme`: 72 DPI + JPEG agresivo + remuestreo sincronizado de firmas (75% - 95% de reducción sin romper texto ni sellos).
+  * `screen`: 72 DPI (máximo ahorro para plataformas educativas y cuotas web estrictas).
+  * `balanced`: 150 DPI (recomendado para tareas universitarias, reportes y correo electrónico).
   * `print`: 300 DPI con compresión JPEG suave (ideal para documentos oficiales o impresos).
-  * `balanced`: 150 DPI (recomendado para tareas universitarias, lectura y correo electrónico).
-  * `screen`: 72 DPI (máximo ahorro de espacio para superar cuotas estrictas de subida).
+  * `lossless`: Compresión puramente estructural (object streams) con 0% de degradación visual.
 * **Protección contra Crecimiento de Archivo:** Si el documento de salida resulta ser más pesado que el original, revierte automáticamente para evitar degradaciones innecesarias.
 * **Procesamiento por Lotes (Batch):** Procesa carpetas enteras de documentos con estadísticas consolidadas en tablas interactivas.
 
@@ -80,7 +83,7 @@ python pdf_optimizer.py documento.pdf --profile balanced
 |---|---|---|---|
 | `input` | Ruta a archivo o carpeta | *GUI Picker* | Documento o carpeta a procesar. Si se omite, abre diálogo nativo. |
 | `-o, --output` | Ruta de archivo | `[nombre]_optimized.pdf` | Ruta de salida personalizada. |
-| `-p, --profile` | `lossless`, `print`, `balanced`, `screen` | `balanced` | Perfil de calidad y resolución DPI. |
+| `-p, --profile` | `extreme`, `screen`, `balanced`, `print`, `lossless` | `balanced` | Perfil de calidad y resolución DPI. |
 | `-e, --engine` | `native`, `gs` | `native` | Motor: `native` (Python puro sin dependencias) o `gs` (Ghostscript). |
 | `--strict-ocr` | Flag booleano | `False` | Aborta y revierte si detecta pérdida en la capa de texto OCR. |
 | `--batch` | Flag booleano | `False` | Procesa recursivamente todos los PDFs en la carpeta indicada. |
