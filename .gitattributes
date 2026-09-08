@@ -9,6 +9,7 @@
 *.yml text eol=lf
 *.yaml text eol=lf
 *.txt text eol=lf
+*.sh text eol=lf
 
 # Windows-native shell and registry files (CRLF)
 *.bat text eol=crlf
