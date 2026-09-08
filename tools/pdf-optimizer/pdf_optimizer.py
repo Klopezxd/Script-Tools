@@ -37,17 +37,13 @@ from rich.console import Console
 console = Console()
 
 PROFILES: Dict[str, Dict[str, Any]] = {
-    "lossless": {
-        "name": "Lossless (Structural Only)",
-        "dpi": None,
-        "quality": 100,
-        "desc": "Flattens object streams, strips bloat, 0% visual loss.",
-    },
-    "print": {
-        "name": "Print Quality (300 DPI)",
-        "dpi": 300,
-        "quality": 85,
-        "desc": "High visual fidelity for printing or formal archives.",
+    "extreme": {
+        "name": "Compresión Extrema (72 DPI, Compresión Agresiva)",
+        "dpi": 72,
+        "quality": 45,
+        "desc": (
+            "Máxima reducción posible. Aplana imágenes y comprime al máximo manteniendo texto y OCR 100% legibles."
+        ),
     },
     "balanced": {
         "name": "Balanced (150 DPI)",
@@ -60,6 +56,18 @@ PROFILES: Dict[str, Dict[str, Any]] = {
         "dpi": 72,
         "quality": 50,
         "desc": "Maximum size reduction for fast web viewing or storage limits.",
+    },
+    "print": {
+        "name": "Print Quality (300 DPI)",
+        "dpi": 300,
+        "quality": 85,
+        "desc": "High visual fidelity for printing or formal archives.",
+    },
+    "lossless": {
+        "name": "Lossless (Structural Only)",
+        "dpi": None,
+        "quality": 100,
+        "desc": "Flattens object streams, strips bloat, 0% visual loss.",
     },
 }
 
@@ -174,17 +182,21 @@ def optimize_images_in_doc(
                 orig_width = base_image["width"]
                 orig_height = base_image["height"]
 
-                # If image is very small (icons, stamps), skip
-                if orig_width < 150 and orig_height < 150:
+                # If image is very small (tiny icons, spacers), skip
+                if orig_width < 32 and orig_height < 32:
                     continue
 
                 # Load into PIL
                 pil_img = Image.open(io.BytesIO(image_bytes))
 
-                # Estimate page scale / DPI
-                max_dim = max(orig_width, orig_height)
-                target_max = int(11.0 * target_dpi)
+                # Estimate page scale / DPI based on actual page point geometry
+                page_rect = page.rect
+                page_max_pt = max(page_rect.width, page_rect.height)
+                if page_max_pt <= 0:
+                    page_max_pt = 792.0
+                target_max = int((page_max_pt / 72.0) * target_dpi)
 
+                max_dim = max(orig_width, orig_height)
                 needs_resample = max_dim > target_max
                 if needs_resample:
                     scale = target_max / float(max_dim)
@@ -195,11 +207,23 @@ def optimize_images_in_doc(
                 # Recompress to JPEG (convert RGBA/P to RGB if needed)
                 out_buffer = io.BytesIO()
                 if pil_img.mode in ("RGBA", "LA") or (pil_img.mode == "P" and "transparency" in pil_img.info):
-                    pil_img.save(out_buffer, format="PNG", optimize=True)
+                    if target_dpi <= 72 or jpeg_quality <= 60:
+                        # Flatten onto clean white background to dramatically reduce size
+                        bg = Image.new("RGB", pil_img.size, (255, 255, 255))
+                        rgba = pil_img.convert("RGBA")
+                        bg.paste(rgba, mask=rgba.split()[-1])
+                        bg.save(
+                            out_buffer,
+                            format="JPEG",
+                            quality=jpeg_quality,
+                            optimize=True,
+                        )
+                    else:
+                        pil_img.save(out_buffer, format="PNG", optimize=True)
                 elif pil_img.mode == "1":
                     pil_img.save(out_buffer, format="PNG", optimize=True)
                 else:
-                    rgb_img = pil_img.convert("RGB")
+                    rgb_img = pil_img if pil_img.mode == "RGB" else pil_img.convert("RGB")
                     rgb_img.save(
                         out_buffer,
                         format="JPEG",
@@ -210,7 +234,7 @@ def optimize_images_in_doc(
                 new_bytes = out_buffer.getvalue()
 
                 # Only replace if new image actually saves space
-                if len(new_bytes) < len(image_bytes) * 0.95:
+                if len(new_bytes) < len(image_bytes):
                     page.replace_image(xref, stream=new_bytes)
                     images_compressed += 1
 
@@ -394,9 +418,13 @@ def run_single_optimization(
     saved_bytes = stats_before.size_bytes - stats_after.size_bytes
     if saved_bytes <= 0:
         console.print(
-            f"[yellow]ℹ️ El archivo ya estaba optimizado. La compresión no redujo peso "
+            f"[yellow]ℹ️ El archivo ya estaba altamente optimizado. La compresión no redujo peso adicional "
             f"({format_bytes(stats_after.size_bytes)} vs {format_bytes(stats_before.size_bytes)}).[/yellow]"
         )
+        if stats_before.image_count == 0:
+            console.print(
+                "[dim]   (Nota: Este documento es 100% texto/vectorial, sin imágenes rasterizadas que reducir).[/dim]"
+            )
         console.print("[yellow]Conservando archivo original sin alteraciones.[/yellow]")
         if output_path.exists() and output_path.resolve() != input_path.resolve():
             output_path.unlink()
@@ -410,6 +438,10 @@ def run_single_optimization(
         f"([bold green]-{savings_pct:.1f}%[/bold green] | Ahorro: [bold cyan]{format_bytes(saved_bytes)}[/bold cyan])"
     )
     console.print(f"🔒 Capa de Texto/OCR: {'✅ 100% Intacta' if ocr_ok else '⚠️ Revisar'}")
+    if stats_before.image_count == 0:
+        console.print(
+            "[dim]ℹ️  Nota: Documento 100% texto/vectorial (sin fotos ni escaneos). El ahorro proviene de optimización de flujos y fuentes.[/dim]"
+        )
     console.print(f"📁 Guardado en: [dim]{output_path.resolve()}[/dim]")
     return True
 
@@ -438,7 +470,7 @@ def interactive_workflow() -> int:
     try:
         from rich import box
         from rich.panel import Panel
-        from rich.prompt import Confirm, Prompt
+        from rich.prompt import Prompt
 
         console.print()
         console.print(
@@ -465,7 +497,7 @@ def interactive_workflow() -> int:
                 console.print("[yellow]Selección cancelada.[/yellow]")
                 return 0
         else:
-            raw = Prompt.ask("Ruta del archivo PDF").strip().strip('"').strip("'")
+            raw = Prompt.ask("Ruta del archivo (o arrastra el documento aquí)").strip().strip('"').strip("'")
             pdf_file = Path(raw)
             if not pdf_file.exists():
                 console.print(f"[bold red]El archivo no existe: {pdf_file}[/bold red]")
@@ -474,25 +506,28 @@ def interactive_workflow() -> int:
 
         console.print(f"\n[green]Archivo seleccionado:[/green] [bold]{pdf_file.name}[/bold]")
         console.print("[bold]Selecciona el perfil de optimización:[/bold]")
-        console.print("  [1] ⚖️  Equilibrado (150 DPI - Tareas universitarias, correo, lectura) [Recomendado]")
-        console.print("  [2] 📱 Pantalla / Aula Virtual (72 DPI - Cuotas estrictas < 5 MB)")
-        console.print("  [3] 🖨️  Impresión Formal (300 DPI - Portafolios y documentos oficiales)")
-        console.print("  [4] 💎 Sin Pérdida (0% degradación visual, reorganización de objetos)")
+        console.print(
+            "  [1] ⚡ Extrema (Máxima reducción: 72 DPI, compresión agresiva, texto/OCR intactos) [Recomendado para límites < 2 MB]"
+        )
+        console.print("  [2] ⚖️  Equilibrado (150 DPI - Tareas universitarias, correo, lectura) [Recomendado]")
+        console.print("  [3] 📱 Pantalla / Aula Virtual (72 DPI - Cuotas moderadas)")
+        console.print("  [4] 🖨️  Impresión Formal (300 DPI - Portafolios y documentos oficiales)")
+        console.print("  [5] 💎 Sin Pérdida (0% degradación visual, reorganización de objetos)")
         console.print("  [0] 🚪 Cancelar")
 
-        profile_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "0"], default="1")
+        profile_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "5", "0"], default="1")
         if profile_choice == "0":
             return 0
 
         profiles = {
-            "1": "balanced",
-            "2": "screen",
-            "3": "print",
-            "4": "lossless",
+            "1": "extreme",
+            "2": "balanced",
+            "3": "screen",
+            "4": "print",
+            "5": "lossless",
         }
         selected_profile = profiles[profile_choice]
-
-        strict_ocr = Confirm.ask("¿Deseas verificar y proteger estrictamente la capa de texto OCR?", default=True)
+        strict_ocr = True
 
         out_file = pdf_file.parent / f"{pdf_file.stem}_optimized.pdf"
         console.print(
@@ -528,13 +563,14 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Perfiles disponibles:
-  lossless    Compresión estructural pura sin pérdida visual (pikepdf object streams).
-  print       300 DPI, alta fidelidad para impresión y archivado formal.
+  extreme     Compresión máxima (72 DPI, compresión agresiva JPEG/WebP, 100% texto/OCR intacto).
   balanced    150 DPI, recomendado para tareas, correo y lectura general.
   screen      72 DPI, compresión agresiva para límites estrictos de peso.
+  print       300 DPI, alta fidelidad para impresión y archivado formal.
+  lossless    Compresión estructural pura sin pérdida visual (pikepdf object streams).
 
 Ejemplos:
-  python pdf_optimizer.py documento.pdf
+  python pdf_optimizer.py documento.pdf --profile extreme
   python pdf_optimizer.py scan.pdf --profile screen
   python pdf_optimizer.py archivo.pdf --engine gs
   python pdf_optimizer.py ./carpeta_pdfs --batch --profile balanced
@@ -545,7 +581,7 @@ Ejemplos:
     parser.add_argument(
         "-p",
         "--profile",
-        choices=["lossless", "print", "balanced", "screen"],
+        choices=["extreme", "lossless", "print", "balanced", "screen"],
         default="balanced",
         help="Perfil de optimización (por defecto: balanced)",
     )

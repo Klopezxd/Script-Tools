@@ -54,10 +54,11 @@ python pdf_optimizer.py documento.pdf --profile balanced
 
 | Perfil | DPI de Imagen | Calidad JPEG | Reducción Típica | Caso de Uso Ideal |
 |---|---|---|---|---|
+| `extreme` | 72 DPI | 45 (Agresiva) | 75% - 95% | Cuotas estrictas (< 2 MB), WhatsApp, tareas pesadas (mantiene 100% texto/OCR). |
+| `screen` | 72 DPI | 50 (Baja) | 70% - 90% | Plataformas educativas o portales web con límites moderados (< 5 MB). |
+| `balanced` | 150 DPI | 75 (Media) | 50% - 80% | Tareas universitarias, reportes, diapositivas y envío por email [Recomendado]. |
+| `print` | 300 DPI | 85 (Alta) | 30% - 60% | Documentos formales para impresión física o portafolios. |
 | `lossless` | Original | Sin re-muestreo | 10% - 35% | Tesis, contratos legales, PDFs ya vectoriales (0% pérdida visual). |
-| `print` | 300 DPI | 88 (Alta) | 30% - 60% | Documentos formales para impresión física o portafolios. |
-| `balanced` | 150 DPI | 75 (Media) | 50% - 80% | Tareas universitarias, reportes, diapositivas y envío por email. |
-| `screen` | 72 DPI | 60 (Baja) | 70% - 92% | Plataformas educativas o portales web con cuotas estrictas (< 5 MB). |
 
 ---
 

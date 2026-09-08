@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -78,9 +79,37 @@ class VideoMetadata:
     size_bytes: int
 
 
+def ensure_ffmpeg_in_path() -> Optional[str]:
+    """Detects ffmpeg in standard PATH or auto-discovers WinGet / Scoop / Chocolatey installations."""
+    binary = shutil.which("ffmpeg")
+    if binary:
+        return binary
+
+    if sys.platform == "win32":
+        import glob
+
+        localappdata = os.environ.get("LOCALAPPDATA", "")
+        userprofile = os.environ.get("USERPROFILE", "")
+        candidates = [
+            os.path.join(localappdata, "Microsoft", "WinGet", "Packages", "Gyan.FFmpeg*", "**", "ffmpeg.exe"),
+            os.path.join(localappdata, "Microsoft", "WinGet", "Links", "ffmpeg.exe"),
+            os.path.join(userprofile, "scoop", "apps", "ffmpeg", "current", "bin", "ffmpeg.exe"),
+            r"C:\ProgramData\chocolatey\bin\ffmpeg.exe",
+            r"C:\ffmpeg\bin\ffmpeg.exe",
+        ]
+        for pattern in candidates:
+            matches = glob.glob(pattern, recursive=True)
+            if matches:
+                found = matches[0]
+                bin_dir = str(Path(found).parent)
+                os.environ["PATH"] = f"{bin_dir};{os.environ.get('PATH', '')}"
+                return found
+    return None
+
+
 def get_ffmpeg_binary() -> str:
     """Returns path to ffmpeg or exits with helpful instructions."""
-    binary = shutil.which("ffmpeg")
+    binary = ensure_ffmpeg_in_path()
     if not binary:
         try:
             from rich import box
@@ -577,7 +606,7 @@ def interactive_workflow() -> int:
             )
         )
 
-        if not shutil.which("ffmpeg"):
+        if not ensure_ffmpeg_in_path():
             install_cmd = "winget install Gyan.FFmpeg"
             if sys.platform == "darwin":
                 install_cmd = "brew install ffmpeg"
@@ -619,7 +648,7 @@ def interactive_workflow() -> int:
                 c.print("[yellow]Selección cancelada.[/yellow]")
                 return 0
         else:
-            raw = Prompt.ask("Ruta del archivo de video").strip().strip('"').strip("'")
+            raw = Prompt.ask("Ruta del archivo (o arrastra el video aquí)").strip().strip('"').strip("'")
             video_file = Path(raw)
             if not video_file.exists():
                 c.print(f"[bold red]El archivo no existe: {video_file}[/bold red]")

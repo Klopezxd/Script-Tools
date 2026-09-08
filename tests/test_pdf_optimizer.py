@@ -136,7 +136,7 @@ def test_pdf_multipage_all_profiles():
         assert orig_size > 0
 
         # Test each profile
-        for prof in ["lossless", "balanced", "print", "screen"]:
+        for prof in ["extreme", "lossless", "balanced", "print", "screen"]:
             out_pdf = Path(tmpdir) / f"out_{prof}.pdf"
             success = run_single_optimization(
                 input_path=input_pdf,

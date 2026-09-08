@@ -67,6 +67,8 @@ def audit_vscode() -> List[CheckResult]:
     code_bin = shutil.which("code") or shutil.which("code.cmd")
 
     if code_bin:
+        code_lower = code_bin.lower()
+        is_competitor = any(ide in code_lower for ide in ["cursor", "vscodium", "windsurf", "positron"])
         try:
             proc = subprocess.run(
                 [code_bin, "--version"],
@@ -78,14 +80,26 @@ def audit_vscode() -> List[CheckResult]:
             lines = proc.stdout.strip().splitlines()
             ver = lines[0] if lines else "Version detectada"
             arch = lines[2] if len(lines) >= 3 else ""
-            results.append(
-                CheckResult(
-                    category="Editor",
-                    component="VS Code CLI (`code`)",
-                    status="OK",
-                    details=f"v{ver} ({arch}) -> {code_bin}",
+            if is_competitor:
+                detected_ide = "Cursor" if "cursor" in code_lower else "Otro IDE"
+                results.append(
+                    CheckResult(
+                        category="Editor",
+                        component="VS Code CLI (`code`)",
+                        status="WARN",
+                        details=f"⚠️ CONFLICTO: 'code' apunta a {detected_ide} ({code_bin}) en vez de Microsoft VS Code.",
+                        recommendation="Ejecuta check_vscode_path.ps1 para restaurar el comando 'code' a Microsoft VS Code oficial.",
+                    )
                 )
-            )
+            else:
+                results.append(
+                    CheckResult(
+                        category="Editor",
+                        component="VS Code CLI (`code`)",
+                        status="OK",
+                        details=f"v{ver} ({arch}) -> {code_bin}",
+                    )
+                )
         except Exception as err:
             results.append(
                 CheckResult(

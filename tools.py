@@ -7,6 +7,7 @@ Unified entry point for video compression, PDF optimization, and developer envir
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -248,9 +249,9 @@ def _interactive_video():
         )
     )
 
-    import shutil
+    import compress_video
 
-    if not shutil.which("ffmpeg"):
+    if not compress_video.ensure_ffmpeg_in_path():
         install_cmd = "winget install Gyan.FFmpeg"
         if sys.platform == "darwin":
             install_cmd = "brew install ffmpeg"
@@ -294,14 +295,12 @@ def _interactive_video():
 
     video_path = None
     if mode == "1":
-        import compress_video
-
         video_path = compress_video.interactive_gui_picker()
         if not video_path:
             console.print("[yellow]Selección cancelada.[/yellow]")
             return
     else:
-        raw_path = Prompt.ask("Ruta del archivo de video").strip().strip('"').strip("'")
+        raw_path = Prompt.ask("Ruta del archivo (o arrastra el video aquí)").strip().strip('"').strip("'")
         video_path = Path(raw_path)
         if not video_path.exists():
             console.print(f"[bold red]El archivo no existe: {video_path}[/bold red]")
@@ -366,7 +365,7 @@ def _interactive_pdf():
             console.print("[yellow]Selección cancelada.[/yellow]")
             return
     else:
-        raw_path = Prompt.ask("Ruta del documento PDF").strip().strip('"').strip("'")
+        raw_path = Prompt.ask("Ruta del archivo (o arrastra el documento aquí)").strip().strip('"').strip("'")
         pdf_path = Path(raw_path)
         if not pdf_path.exists():
             console.print(f"[bold red]El archivo no existe: {pdf_path}[/bold red]")
@@ -375,29 +374,28 @@ def _interactive_pdf():
 
     console.print(f"\n[green]Archivo seleccionado:[/green] [bold]{pdf_path.name}[/bold]")
     console.print("[bold]Selecciona el perfil de optimización:[/bold]")
-    console.print("  [1] ⚖️  Equilibrado (150 DPI - Tareas universitarias, correo, lectura) [Recomendado]")
-    console.print("  [2] 📱 Pantalla / Aula Virtual (72 DPI - Cuotas estrictas < 5 MB)")
-    console.print("  [3] 🖨️  Impresión Formal (300 DPI - Portafolios y documentos oficiales)")
-    console.print("  [4] 💎 Sin Pérdida (0% degradación visual, reorganización de objetos)")
+    console.print(
+        "  [1] ⚡ Extrema (Máxima reducción: 72 DPI, compresión agresiva, texto/OCR intactos) [Recomendado para límites < 2 MB]"
+    )
+    console.print("  [2] ⚖️  Equilibrado (150 DPI - Tareas universitarias, correo, lectura) [Recomendado]")
+    console.print("  [3] 📱 Pantalla / Aula Virtual (72 DPI - Cuotas moderadas)")
+    console.print("  [4] 🖨️  Impresión Formal (300 DPI - Portafolios y documentos oficiales)")
+    console.print("  [5] 💎 Sin Pérdida (0% degradación visual, reorganización de objetos)")
     console.print("  [0] ↩️  Volver")
 
-    profile_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "0"], default="1")
+    profile_choice = Prompt.ask("Perfil", choices=["1", "2", "3", "4", "5", "0"], default="1")
     if profile_choice == "0":
         return
 
     profiles = {
-        "1": "balanced",
-        "2": "screen",
-        "3": "print",
-        "4": "lossless",
+        "1": "extreme",
+        "2": "balanced",
+        "3": "screen",
+        "4": "print",
+        "5": "lossless",
     }
     selected_profile = profiles[profile_choice]
-
-    strict_ocr = Confirm.ask("¿Deseas verificar y proteger estrictamente la capa de texto OCR?", default=True)
-
-    extra_args = [str(pdf_path), "--profile", selected_profile]
-    if strict_ocr:
-        extra_args.append("--strict-ocr")
+    extra_args = [str(pdf_path), "--profile", selected_profile, "--strict-ocr"]
 
     console.print(
         f"\n[cyan]Iniciando optimización de [bold]{pdf_path.name}[/bold] con perfil '{selected_profile}'...[/cyan]\n"
@@ -410,12 +408,30 @@ def _interactive_doctor():
     console.print()
     console.print(
         Panel(
-            "[bold cyan]🩺  Auditoría del Entorno de Desarrollo (Dev Doctor)[/bold cyan]",
+            "[bold cyan]🩺  Auditoría y Reparación del Entorno (Dev Doctor)[/bold cyan]",
             border_style="cyan",
             box=box.ROUNDED,
         )
     )
-    dispatch_doctor([])
+
+    console.print("[bold]Selecciona una acción:[/bold]")
+    console.print("  [1] 🩺 Auditoría Integral (VS Code, Git, Compiladores C/C++, Runtimes, PATH)")
+    console.print(
+        "  [2] 🔧 Diagnosticar y Reparar 'code' en PATH (Restaura VS Code si Cursor u otro IDE secuestró el comando)"
+    )
+    console.print("  [0] ↩️  Volver al menú principal")
+
+    choice = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
+    if choice == "0":
+        return
+    elif choice == "1":
+        dispatch_doctor([])
+    elif choice == "2":
+        if sys.platform == "win32":
+            script = ROOT_DIR / "tools" / "vscode-path-doctor" / "check_vscode_path.ps1"
+            subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
+        else:
+            dispatch_doctor([])
     Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
 
 
