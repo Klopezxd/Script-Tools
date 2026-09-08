@@ -234,14 +234,6 @@ Script-Tools/
 ├── LICENSE                       # Licencia MIT
 └── README.md                     # Documentación principal
 ```
-
----
-
-## 🌐 Proyectos Relacionados
-
-* **[`whisperx-transcriptor`](https://github.com/Klopezxd/whisperx-transcriptor):** Pipeline de transcripción fonética y diarización de locutores en la nube sobre Hugging Face Spaces (ZeroGPU NVIDIA A100/T4 + Pyannote 3.1).
-* **[`vet-prescription-generator`](https://github.com/Klopezxd/vet-prescription-generator):** Aplicación de escritorio nativa en **C# .NET 10** (`Single-File AOT Trimmed`, ~13 MB) con servidor HTTP embebido, SQLite WAL y generación oficial de recetas veterinarias para Agrocalidad Ecuador.
-
 ---
 
 ## 📜 Licencia
