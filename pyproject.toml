@@ -40,5 +40,6 @@ pythonpath = [
     "tools/video-compressor",
     "tools/pdf-optimizer",
     "tools/vscode-path-doctor",
+    "tools/system-backup-preformat",
     "."
 ]

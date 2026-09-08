@@ -495,7 +495,9 @@ def interactive_workflow() -> int:
         strict_ocr = Confirm.ask("¿Deseas verificar y proteger estrictamente la capa de texto OCR?", default=True)
 
         out_file = pdf_file.parent / f"{pdf_file.stem}_optimized.pdf"
-        console.print(f"\n[cyan]Iniciando optimización de [bold]{pdf_file.name}[/bold] con perfil '{selected_profile}'...[/cyan]\n")
+        console.print(
+            f"\n[cyan]Iniciando optimización de [bold]{pdf_file.name}[/bold] con perfil '{selected_profile}'...[/cyan]\n"
+        )
         ok = run_single_optimization(
             input_path=pdf_file,
             output_path=out_file,

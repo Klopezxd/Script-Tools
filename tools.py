@@ -30,7 +30,7 @@ if sys.platform == "win32":
 ROOT_DIR = Path(__file__).resolve().parent
 
 # Ensure sub-packages are discoverable
-for subdir in ["video-compressor", "pdf-optimizer", "vscode-path-doctor"]:
+for subdir in ["video-compressor", "pdf-optimizer", "vscode-path-doctor", "system-backup-preformat"]:
     path_str = str(ROOT_DIR / "tools" / subdir)
     if path_str not in sys.path:
         sys.path.insert(0, path_str)
@@ -223,17 +223,19 @@ def dispatch_completion(extra_args: list[str]) -> int:
 
 
 def dispatch_backup(extra_args: list[str]) -> int:
-    """Dispatches system pre-format backup on Windows."""
-    if sys.platform != "win32":
-        sys.stderr.write("[ERROR] System Pre-Format Backup is designed specifically for Windows.\n")
-        return 1
-    script = ROOT_DIR / "tools" / "system-backup-preformat" / "backup_preformat.ps1"
-    cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)] + extra_args
-    try:
-        return subprocess.run(cmd).returncode
-    except FileNotFoundError:
-        sys.stderr.write("[ERROR] 'powershell' no está disponible en el PATH del sistema.\n")
-        return 1
+    """Dispatches developer environment backup across Windows, Linux, and macOS."""
+    if sys.platform == "win32":
+        script = ROOT_DIR / "tools" / "system-backup-preformat" / "backup_preformat.ps1"
+        cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)] + extra_args
+        try:
+            return subprocess.run(cmd).returncode
+        except FileNotFoundError:
+            sys.stderr.write("[ERROR] 'powershell' no está disponible en el PATH del sistema.\n")
+            return 1
+    else:
+        import backup_unix
+
+        return backup_unix.backup_unix()
 
 
 def _interactive_video():
@@ -249,24 +251,35 @@ def _interactive_video():
     import shutil
 
     if not shutil.which("ffmpeg"):
+        install_cmd = "winget install Gyan.FFmpeg"
+        if sys.platform == "darwin":
+            install_cmd = "brew install ffmpeg"
+        elif sys.platform.startswith("linux"):
+            install_cmd = "sudo apt install ffmpeg  (o sudo pacman -S ffmpeg / dnf install ffmpeg)"
+
         console.print(
             Panel(
                 "[bold red]FFmpeg no está instalado en el sistema.[/bold red]\n\n"
-                "El compresor requiere FFmpeg en el PATH para procesar y codificar video.\n"
-                "Puedes instalarlo en Windows ejecutando:\n"
-                "  [bold cyan]winget install Gyan.FFmpeg[/bold cyan]\n"
-                "o con Scoop:\n"
-                "  [bold cyan]scoop install ffmpeg[/bold cyan]",
-                title="[bold yellow]Dependencia Requerida[/bold yellow]",
+                "El compresor requiere FFmpeg en el PATH para procesar y codificar video.\n\n"
+                f"Comando de instalación recomendado:\n  [bold cyan]{install_cmd}[/bold cyan]",
+                title="[bold yellow]Dependencia Requerida: FFmpeg[/bold yellow]",
                 border_style="red",
                 box=box.ROUNDED,
             )
         )
         if sys.platform == "win32" and shutil.which("winget"):
-            if Confirm.ask("¿Deseas que Script-Tools intente instalar FFmpeg automáticamente con winget ahora?", default=True):
+            if Confirm.ask(
+                "¿Deseas que Script-Tools intente instalar FFmpeg automáticamente con winget ahora?", default=True
+            ):
                 console.print("\n[cyan]Ejecutando: winget install -e --id Gyan.FFmpeg...[/cyan]")
                 subprocess.run(["winget", "install", "-e", "--id", "Gyan.FFmpeg"])
-                console.print("[yellow]Nota: Si la instalación terminó, reinicia tu terminal para que tome efecto en el PATH.[/yellow]")
+                console.print(
+                    "[yellow]Nota: Si la instalación terminó, reinicia tu terminal para que tome efecto en el PATH.[/yellow]"
+                )
+        elif sys.platform == "darwin" and shutil.which("brew"):
+            if Confirm.ask("¿Deseas que Script-Tools intente instalar FFmpeg con Homebrew ahora?", default=True):
+                console.print("\n[cyan]Ejecutando: brew install ffmpeg...[/cyan]")
+                subprocess.run(["brew", "install", "ffmpeg"])
         Prompt.ask("\n[dim]Presiona Enter para continuar...[/dim]")
         return
 
@@ -386,7 +399,9 @@ def _interactive_pdf():
     if strict_ocr:
         extra_args.append("--strict-ocr")
 
-    console.print(f"\n[cyan]Iniciando optimización de [bold]{pdf_path.name}[/bold] con perfil '{selected_profile}'...[/cyan]\n")
+    console.print(
+        f"\n[cyan]Iniciando optimización de [bold]{pdf_path.name}[/bold] con perfil '{selected_profile}'...[/cyan]\n"
+    )
     dispatch_pdf(extra_args)
     Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
 
@@ -406,27 +421,38 @@ def _interactive_doctor():
 
 def _interactive_backup():
     console.print()
+    platform_title = "Windows" if sys.platform == "win32" else ("macOS" if sys.platform == "darwin" else "Linux")
     console.print(
         Panel(
-            "[bold cyan]💾  Respaldo Exhaustivo Pre-Formateo de Windows[/bold cyan]\n"
-            "[dim]Genera un snapshot del entorno dev y un asistente interactivo REINSTALL.ps1[/dim]",
+            f"[bold cyan]💾  Respaldo Exhaustivo Pre-Formateo ({platform_title})[/bold cyan]\n"
+            "[dim]Genera un snapshot del entorno dev y script automatizado de restauración[/dim]",
             border_style="cyan",
             box=box.ROUNDED,
         )
     )
 
-    if sys.platform != "win32":
-        console.print("[bold red]Esta herramienta está diseñada específicamente para sistemas Windows.[/bold red]")
-        Prompt.ask("\n[dim]Presiona Enter para continuar...[/dim]")
-        return
-
-    console.print("Se creará una carpeta en tu Escritorio conteniendo el inventario de:")
-    console.print("  • Paquetes Winget, aplicaciones Scoop y Chocolatey")
-    console.print("  • Extensiones, settings.json y snippets de VS Code")
-    console.print("  • Compiladores (MSVC, GCC, Clang, CMake, Ninja)")
-    console.print("  • Runtimes (Python, Node.js, .NET, Rust/Cargo)")
-    console.print("  • Variables de entorno del sistema y de usuario (.reg)")
-    console.print("  • Asistente interactivo de restauración [bold]REINSTALL.ps1[/bold]\n")
+    console.print("Se creará una carpeta con el inventario completo de:")
+    if sys.platform == "win32":
+        console.print("  • Paquetes Winget, aplicaciones Scoop y Chocolatey")
+        console.print("  • Extensiones, settings.json y snippets de VS Code")
+        console.print("  • Compiladores (MSVC, GCC, Clang, CMake, Ninja)")
+        console.print("  • Runtimes (Python, Node.js, .NET, Rust/Cargo)")
+        console.print("  • Variables de entorno del sistema y de usuario (.reg)")
+        console.print("  • Asistente interactivo de restauración [bold]REINSTALL.ps1[/bold]\n")
+    elif sys.platform == "darwin":
+        console.print("  • Homebrew Brewfile (fórmulas, casks y dependencias instaladas)")
+        console.print("  • Extensiones, settings.json y snippets de VS Code")
+        console.print("  • Configuración global de Git (.gitconfig)")
+        console.print("  • Perfiles de shell (~/.zshrc, ~/.bash_profile)")
+        console.print("  • Llaves públicas SSH y known_hosts")
+        console.print("  • Script de auto-restauración [bold]restore.sh[/bold]\n")
+    else:
+        console.print("  • Paquetes del sistema (APT, Pacman o DNF) y aplicaciones Flatpak")
+        console.print("  • Extensiones, settings.json y snippets de VS Code")
+        console.print("  • Configuración global de Git (.gitconfig)")
+        console.print("  • Perfiles de shell (~/.bashrc, ~/.zshrc)")
+        console.print("  • Llaves públicas SSH y known_hosts")
+        console.print("  • Script de auto-restauración [bold]restore.sh[/bold]\n")
 
     if Confirm.ask("¿Deseas iniciar el respaldo ahora?", default=True):
         dispatch_backup([])
@@ -437,30 +463,32 @@ def _interactive_context_menu():
     console.print()
     console.print(
         Panel(
-            "[bold cyan]🖱️  Integración al Menú Contextual de Windows Explorer[/bold cyan]\n"
-            "[dim]Permite hacer clic derecho en cualquier video o PDF para optimizarlo al instante[/dim]",
+            "[bold cyan]🖱️  Integración al Menú Contextual / Sistema[/bold cyan]\n"
+            "[dim]Permite acceder rápidamente a la compresión y optimización multimedia[/dim]",
             border_style="cyan",
             box=box.ROUNDED,
         )
     )
 
-    if sys.platform != "win32":
-        console.print("[bold red]La integración al Explorador de Windows es exclusiva para Windows.[/bold red]")
-        Prompt.ask("\n[dim]Presiona Enter para continuar...[/dim]")
-        return
+    if sys.platform == "win32":
+        console.print("[bold]Selecciona una acción para Windows Explorer:[/bold]")
+        console.print("  [1] 📥 Instalar accesos directos (Clic derecho > Comprimir / Optimizar)")
+        console.print("  [2] 📤 Desinstalar accesos directos de Script-Tools")
+        console.print("  [0] ↩️  Volver")
 
-    console.print("[bold]Selecciona una acción:[/bold]")
-    console.print("  [1] 📥 Instalar accesos directos (Clic derecho > Comprimir / Optimizar)")
-    console.print("  [2] 📤 Desinstalar accesos directos de Script-Tools")
-    console.print("  [0] ↩️  Volver")
-
-    choice = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
-    if choice == "1":
-        script = ROOT_DIR / "scripts" / "install_context_menu.ps1"
-        subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
-    elif choice == "2":
-        script = ROOT_DIR / "scripts" / "uninstall_context_menu.ps1"
-        subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
+        choice = Prompt.ask("Opción", choices=["1", "2", "0"], default="1")
+        if choice == "1":
+            script = ROOT_DIR / "scripts" / "install_context_menu.ps1"
+            subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
+        elif choice == "2":
+            script = ROOT_DIR / "scripts" / "uninstall_context_menu.ps1"
+            subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
+    else:
+        console.print("[green]En Linux y macOS, Script-Tools se integra mediante comando global de terminal:[/green]\n")
+        console.print("  1. Ejecutable directo local: [bold cyan]./tools.sh[/bold cyan]")
+        console.print("  2. Instalación como comando de sistema: [bold cyan]pip install -e .[/bold cyan]")
+        console.print("     Luego podrás escribir directamente [bold]tools menu[/bold] o [bold]tools video ...[/bold]")
+        console.print('  3. Autocompletado de shell: [bold cyan]eval "$(tools completion bash)"[/bold cyan] o zsh\n')
     Prompt.ask("\n[bold green]Presiona Enter para volver al menú...[/bold green]")
 
 
@@ -482,8 +510,16 @@ def run_interactive_menu() -> int:
         table.add_row("[1]", "🎥 Comprimir Video", "AV1, HEVC, WhatsApp (15MB), Discord, Aceleración GPU")
         table.add_row("[2]", "📄 Optimizar PDF", "150/72 DPI, preservación 100% OCR, ahorro hasta 85%")
         table.add_row("[3]", "🩺 Auditoría Dev Doctor", "Salud de VS Code, Git, Compiladores (C/C++), Runtimes, PATH")
-        table.add_row("[4]", "💾 Respaldo Pre-Formateo", "Snapshot de paquetes Winget/Scoop, VS Code, variables de entorno")
-        table.add_row("[5]", "🖱️ Menú Contextual", "Instalar / Desinstalar accesos de clic derecho en Windows Explorer")
+        table.add_row(
+            "[4]",
+            "💾 Respaldo Pre-Formateo",
+            "Snapshot dev (Windows Winget/Scoop, macOS Homebrew, Linux APT/Pacman)",
+        )
+        table.add_row(
+            "[5]",
+            "🖱️ Integración Sistema",
+            "Menú contextual Explorer (Windows) / Comando global CLI (macOS/Linux)",
+        )
         table.add_row("[0]", "🚪 Salir", "Cerrar la suite")
 
         console.print(table)
@@ -584,7 +620,9 @@ Ejemplos:
 
     if parsed_args.interactive or parsed_args.command == "menu":
         if "-h" in extra_args or "--help" in extra_args:
-            print("Uso: tools menu [-h]\n\nAbre la interfaz interactiva visual (TUI) para acceder a todas las herramientas.")
+            print(
+                "Uso: tools menu [-h]\n\nAbre la interfaz interactiva visual (TUI) para acceder a todas las herramientas."
+            )
             return 0
         return run_interactive_menu()
 

@@ -19,17 +19,18 @@ Todas las herramientas independientes se encuentran organizadas en el directorio
 |---|---|---|---|---|
 | **Video Compressor** | [`tools/video-compressor/`](tools/video-compressor/) | Multiplataforma | Compresión multi-códec (**AV1, HEVC/H.265, H.264, VP9**), auto-detección de GPU (NVENC, VideoToolbox, QSV, AMF) y modo **Target Size a 2 pasadas** para WhatsApp y Discord. | `python tools.py video <file> --target-size 15MB` |
 | **PDF Optimizer** | [`tools/pdf-optimizer/`](tools/pdf-optimizer/) | Multiplataforma | Motor híbrido con re-muestreo de imágenes en memoria y optimización de flujos de objetos. **Preservación garantizada de capas de texto y OCR**. Funciona sin dependencias externas (Ghostscript opcional). | `python tools.py pdf <file> --profile balanced` |
-| **System Backup Pre-Format** | [`tools/system-backup-preformat/`](tools/system-backup-preformat/) | Windows | Snapshot integral del entorno dev (**Winget, Scoop, VS Code settings y extensiones, Git, WSL2, compiladores, variables de entorno**). Genera `REINSTALL.ps1` interactivo. | `powershell .\tools\system-backup-preformat\backup_preformat.ps1` |
+| **Developer Backup Pre-Format** | [`tools/system-backup-preformat/`](tools/system-backup-preformat/) | Multiplataforma | Snapshot integral del entorno dev (**Windows**: Winget/Scoop/VSCode/Reg; **macOS**: Homebrew/VSCode; **Linux**: APT/Pacman/Flatpak/VSCode). Genera scripts de auto-restauración (`REINSTALL.ps1` / `restore.sh`). | `python tools.py backup` |
 | **Dev Environment Doctor** | [`tools/vscode-path-doctor/`](tools/vscode-path-doctor/) | Multiplataforma | **Dev Doctor** multiplataforma (audita salud de VS Code, Git, compiladores C/C++, CMake, Ninja, runtimes) + Reparador de PATH de VS Code en Windows. | `python tools.py doctor` |
 
 ---
 
-## Modo Interactivo & Menú TUI (`tools.bat` / `tools menu`)
+## Modo Interactivo & Menú TUI (`tools.bat` / `tools.sh` / `tools menu`)
 
 Para una experiencia visual guiada con menús enriquecidos en terminal:
 
-* **En Windows:** Haz doble clic directamente sobre [**`tools.bat`**](tools.bat) en la raíz del repositorio.
-* **Desde cualquier terminal:** Ejecuta `python tools.py menu` (o `tools menu`).
+* **En Windows:** Haz doble clic directamente sobre [**`tools.bat`**](tools.bat) (o ejecuta `tools.bat`).
+* **En Linux & macOS:** Ejecuta [**`./tools.sh`**](tools.sh) (o `bash tools.sh`).
+* **Desde cualquier sistema:** Ejecuta `python tools.py menu` (o simplemente `tools menu`).
 
 Incluye selector gráfico de archivos, configuración guiada de presets (WhatsApp 15MB, Discord 25MB, AV1, GPU, perfiles PDF con protección OCR), diagnósticos integrados y pausas automáticas que evitan el cierre abrupto de ventanas al finalizar.
 
@@ -102,12 +103,15 @@ source <(tools completion zsh)
 
 ## Instalación y Configuración
 
-### Opción A: Configuración Automatizada (Windows)
-Haz doble clic en **`setup.bat`** (o ejecuta desde PowerShell):
-```powershell
-.\setup.ps1
-```
-El script crea automáticamente el entorno virtual (`.venv`), actualiza `pip`, instala todas las dependencias y audita la presencia de `ffmpeg`.
+### Opción A: Configuración Automatizada
+
+* **En Windows:** Haz doble clic en **`setup.bat`** (o ejecuta `.\setup.ps1` en PowerShell).
+* **En Linux & macOS:** Ejecuta:
+  ```bash
+  chmod +x setup.sh tools.sh
+  ./setup.sh
+  ```
+El asistente crea automáticamente el entorno virtual (`.venv`), actualiza `pip`, instala el paquete en modo editable y valida la disponibilidad de `ffmpeg`.
 
 ### Opción B: Ejecutable Autónomo Standalone (Sin Requerir Python)
 Si no deseas instalar Python ni configurar entornos virtuales, descarga el binario precompilado independiente desde [**Releases**](https://github.com/Klopezxd/Script-Tools/releases):

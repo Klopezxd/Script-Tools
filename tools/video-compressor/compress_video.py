@@ -578,14 +578,18 @@ def interactive_workflow() -> int:
         )
 
         if not shutil.which("ffmpeg"):
+            install_cmd = "winget install Gyan.FFmpeg"
+            if sys.platform == "darwin":
+                install_cmd = "brew install ffmpeg"
+            elif sys.platform.startswith("linux"):
+                install_cmd = "sudo apt install ffmpeg  (o pacman -S ffmpeg / dnf install ffmpeg)"
+
             c.print(
                 Panel(
                     "[bold red]FFmpeg no está instalado en el sistema.[/bold red]\n\n"
-                    "Para comprimir videos se requiere FFmpeg en el PATH.\n"
-                    "Puedes instalarlo en Windows ejecutando:\n"
-                    "  [bold cyan]winget install Gyan.FFmpeg[/bold cyan]\n"
-                    "  o con Scoop: [bold cyan]scoop install ffmpeg[/bold cyan]",
-                    title="[bold yellow]Dependencia Requerida[/bold yellow]",
+                    "Para comprimir videos se requiere FFmpeg en el PATH.\n\n"
+                    f"Comando de instalación recomendado:\n  [bold cyan]{install_cmd}[/bold cyan]",
+                    title="[bold yellow]Dependencia Requerida: FFmpeg[/bold yellow]",
                     border_style="red",
                     box=box.ROUNDED,
                 )
@@ -594,6 +598,9 @@ def interactive_workflow() -> int:
                 if Confirm.ask("¿Deseas que Script-Tools intente instalar FFmpeg con winget ahora?", default=True):
                     subprocess.run(["winget", "install", "-e", "--id", "Gyan.FFmpeg"])
                     c.print("[yellow]Si la instalación terminó, reinicia tu consola para actualizar el PATH.[/yellow]")
+            elif sys.platform == "darwin" and shutil.which("brew"):
+                if Confirm.ask("¿Deseas que Script-Tools intente instalar FFmpeg con Homebrew ahora?", default=True):
+                    subprocess.run(["brew", "install", "ffmpeg"])
             Prompt.ask("\n[dim]Presiona Enter para salir...[/dim]")
             return 1
 
