@@ -174,8 +174,20 @@ def optimize_images_in_doc(
         task = progress.add_task("Optimizando imágenes incrustadas...", total=len(unique_images))
         for page, xref in unique_images:
             try:
+                # Check for Soft Masks (/SMask) or Color-key Masks (/Mask)
+                xref_str = doc.xref_object(xref)
+                if "/SMask" in xref_str or "/Mask" in xref_str:
+                    # CRITICAL: Preserve transparency!
+                    # Signatures, stamps, and watermarks use /SMask or /Mask.
+                    # Recompressing them to opaque JPEG destroys the mask, creating black boxes
+                    # or opaque overlays that obscure text.
+                    continue
+
                 base_image = doc.extract_image(xref)
                 if not base_image:
+                    continue
+
+                if base_image.get("smask", 0) != 0:
                     continue
 
                 image_bytes = base_image["image"]
@@ -204,22 +216,11 @@ def optimize_images_in_doc(
                     new_height = max(1, int(orig_height * scale))
                     pil_img = pil_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
-                # Recompress to JPEG (convert RGBA/P to RGB if needed)
+                # Recompress safely preserving alpha transparency
                 out_buffer = io.BytesIO()
                 if pil_img.mode in ("RGBA", "LA") or (pil_img.mode == "P" and "transparency" in pil_img.info):
-                    if target_dpi <= 72 or jpeg_quality <= 60:
-                        # Flatten onto clean white background to dramatically reduce size
-                        bg = Image.new("RGB", pil_img.size, (255, 255, 255))
-                        rgba = pil_img.convert("RGBA")
-                        bg.paste(rgba, mask=rgba.split()[-1])
-                        bg.save(
-                            out_buffer,
-                            format="JPEG",
-                            quality=jpeg_quality,
-                            optimize=True,
-                        )
-                    else:
-                        pil_img.save(out_buffer, format="PNG", optimize=True)
+                    # Always preserve PNG with alpha to never break transparent graphics
+                    pil_img.save(out_buffer, format="PNG", optimize=True)
                 elif pil_img.mode == "1":
                     pil_img.save(out_buffer, format="PNG", optimize=True)
                 else:

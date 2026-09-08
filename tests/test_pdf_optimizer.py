@@ -196,3 +196,56 @@ def test_pdf_optimize_nested_output_dir():
         assert success is True
         assert nested_out.exists()
         assert nested_out.parent.exists()
+
+
+def test_pdf_transparent_and_masked_images_preserved():
+    """Verify that images with alpha channel or masks are preserved losslessly without flattening to opaque JPEG."""
+    import io
+
+    from pdf_optimizer import run_single_optimization
+    from PIL import Image
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_pdf = Path(tmpdir) / "transparent.pdf"
+        output_pdf = Path(tmpdir) / "transparent_opt.pdf"
+
+        # Create a PDF with text and a transparent RGBA signature image over it
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        page.insert_text((100, 200), "Important Academic Grade: 20.00", fontsize=16)
+
+        # Transparent RGBA image (like a digital signature stamp)
+        rgba_img = Image.new("RGBA", (200, 100), (0, 0, 0, 0))
+        # Draw some non-transparent pixels
+        for x in range(50, 150):
+            for y in range(25, 75):
+                rgba_img.putpixel((x, y), (0, 0, 180, 255))
+        bio = io.BytesIO()
+        rgba_img.save(bio, format="PNG")
+
+        page.insert_image(fitz.Rect(90, 180, 290, 280), stream=bio.getvalue())
+        doc.save(str(input_pdf))
+        doc.close()
+
+        # Run extreme profile (which previously flattened transparent images onto white JPEG)
+        success = run_single_optimization(
+            input_path=input_pdf,
+            output_path=output_pdf,
+            profile_key="extreme",
+            engine="native",
+        )
+        assert success is True
+        assert output_pdf.exists()
+
+        # Verify text is intact
+        with fitz.open(str(output_pdf)) as out_doc:
+            text = out_doc[0].get_text()
+            assert "Important Academic Grade: 20.00" in text
+            # Ensure the image was not converted to DCTDecode (lossy JPEG)
+            images = out_doc[0].get_images(full=True)
+            assert len(images) >= 1
+            for img_info in images:
+                xref = img_info[0]
+                base_img = out_doc.extract_image(xref)
+                # Should be png / flate, not jpeg
+                assert base_img["ext"] in ("png", "flate", "jpx")
